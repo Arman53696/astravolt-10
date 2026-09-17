@@ -13,11 +13,11 @@
    ===================================================================== */
 
 window.ADMOB_CONFIG = {
-  appId: "ca-app-pub-3940256099942544~3347511713",
-  rewardedId: "ca-app-pub-3940256099942544/5224354917",
-  interstitialId: "ca-app-pub-3940256099942544/1033173712",
-  /* set to false once real ad unit ids are in place */
-  testing: true,
+  appId: "ca-app-pub-8410044991900164~9097362980",
+  rewardedId: "ca-app-pub-8410044991900164/8821643779",
+  interstitialId: "ca-app-pub-8410044991900164/6052010204",
+  /* real ad unit ids are in place */
+  testing: false,
 };
 
 (function () {
