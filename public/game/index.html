@@ -3642,6 +3642,10 @@ let savedEquippedSkin=localStorage.getItem("cyberEquippedSkin");
 
 let coins=savedCoins!==null ? Number(savedCoins) : 20;
 
+/* "No Ads" pack (Play product id: ad_4) — once owned, every ad
+   (interstitial + rewarded revive/double-credits) is switched off */
+let adsRemoved=localStorage.getItem("cyberAdsRemoved")==="1";
+
 /* one best score per difficulty; an older single "cyberBest" save
    (from before per-difficulty tracking) is migrated into Normal */
 let bestScores={
@@ -3719,6 +3723,7 @@ localStorage.setItem("cyberUpgShipGun",upgrades.shipGun);
 localStorage.setItem("cyberMaxLevel",maxLevelUnlocked);
 localStorage.setItem("cyberOwnedSkins",ownedSkins.join(","));
 localStorage.setItem("cyberEquippedSkin",equippedSkin);
+localStorage.setItem("cyberAdsRemoved",adsRemoved?"1":"0");
 
 localStorage.setItem("cyberUpdatedAt",Date.now());
 
