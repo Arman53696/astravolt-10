@@ -1,24 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Astravolt — Arcade Space Shooter" },
+      {
+        name: "description",
+        content:
+          "Astravolt is a fast-paced neon arcade shooter with coins, upgrades and skins. Play in your browser or install the Android app.",
+      },
+      { property: "og:title", content: "Astravolt — Arcade Space Shooter" },
+      {
+        property: "og:description",
+        content:
+          "Blast waves of cyber threats, earn coins, unlock upgrades and skins in this neon arcade shooter.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <main className="h-screen w-screen overflow-hidden bg-background">
+      <h1 className="sr-only">Astravolt — arcade space shooter</h1>
+      <iframe
+        src="/game/index.html"
+        title="Astravolt game"
+        className="h-full w-full border-0"
+        allow="autoplay; fullscreen"
       />
-    </div>
+    </main>
   );
 }

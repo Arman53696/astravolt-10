@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Astravolt</string>
+    <string name="title_activity_main">Astravolt</string>
+    <string name="package_name">app.nexora.galaxydefender</string>
+    <string name="custom_url_scheme">app.nexora.galaxydefender</string>
+</resources>
