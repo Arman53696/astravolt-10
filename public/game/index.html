@@ -5834,6 +5834,7 @@ health:'<path d="M12 20s-7-4.4-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.6 12 2
 coinBonus:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.6 10h4.8M9.6 14h4.8"/>',
 piercing:'<path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3.4"/>',
 startShield:'<path d="M12 3 5 6v5c0 5 3.3 8.2 7 10 3.7-1.8 7-5 7-10V6z"/><path d="M12 8.5v5M9.5 11h5"/>',
+shipGun:'<path d="M8 21V10l-2-2V3h4v4M16 21V10l2-2V3h-4v4"/><path d="M10 7h4"/><path d="M12 11v9"/>',
 };
 return S(G[id]||G.fireRate);
 }
@@ -5860,7 +5861,7 @@ segs+=`<div class="up-seg${i<level?" on":""}"></div>`;
 
 }
 
-let accents={fireRate:"#ffb01c",magnet:"#a855f7",shieldTime:"#22d3ee",health:"#ff2e55",coinBonus:"#fbbf24",salvage:"#22d3ee"};
+let accents={fireRate:"#ffb01c",magnet:"#a855f7",shieldTime:"#22d3ee",health:"#ff2e55",coinBonus:"#fbbf24",salvage:"#22d3ee",shipGun:"#c084fc"};
 
 let accent=accents[def.id]||"#38bdf8";
 
