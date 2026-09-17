@@ -10150,6 +10150,7 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
     var store = CdvPurchase.store;
     var PLATFORM = CdvPurchase.Platform.GOOGLE_PLAY;
     var TYPE = CdvPurchase.ProductType.CONSUMABLE;
+    var TYPE_NONCONSUMABLE = CdvPurchase.ProductType.NON_CONSUMABLE;
 
     var pendingBtn = null;
     var pendingSku = null;
@@ -10164,6 +10165,12 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
     function grant(sku, silent) {
       var pack = packFor(sku);
       if (!pack) return;
+      if (pack.removeAds) {
+        adsRemoved = true;
+        saveData();
+        showToast("Ads removed — enjoy the game!", "#10b981");
+        return;
+      }
       coins += pack.coins;
       saveData();
       syncCoinDisplays();
@@ -10198,7 +10205,11 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 
     store.register(
       packs.map(function (p) {
-        return { id: p.sku, type: TYPE, platform: PLATFORM };
+        return {
+          id: p.sku,
+          type: p.removeAds ? TYPE_NONCONSUMABLE : TYPE,
+          platform: PLATFORM,
+        };
       })
     );
 
