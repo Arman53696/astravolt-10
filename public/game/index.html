@@ -5810,6 +5810,17 @@ pack.price=formatted;
 
 async function purchaseSku(sku,coinsAmount,btnEl){
 
+let pack=packs.find(p=>p.sku===sku);
+let isRemoveAds=!!(pack && pack.removeAds);
+
+if(isRemoveAds && adsRemoved){
+
+showToast("Ads are already removed on this account","#10b981");
+
+return;
+
+}
+
 if(!billingAvailable){
 
 showToast("Real purchases only work in the app installed from Google Play","#ef4444");
