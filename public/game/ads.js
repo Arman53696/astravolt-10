@@ -4,12 +4,9 @@
    Works in two modes:
      * Android app (Capacitor)  -> real AdMob ads via @capacitor-community/admob
      * Browser / preview        -> a simulated 5 second ad overlay so every
-                                   reward button stays testable
+                                    reward button stays testable
 
-   REPLACE THE IDs BELOW with your own AdMob App ID / Ad Unit IDs.
-   The values shipped here are Google's official TEST ids.
-   Also put the App ID in android/app/src/main/AndroidManifest.xml
-   (meta-data com.google.android.gms.ads.APPLICATION_ID).
+   App ID and Ad Unit IDs are live (testing disabled).
    ===================================================================== */
 
 window.ADMOB_CONFIG = {
