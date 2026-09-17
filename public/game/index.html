@@ -8164,35 +8164,37 @@ function drawEnemyShip(e){
 
  let img=enemySprite(e.kind);
  if(img){
-  ctx.save();
-  ctx.translate(e.x,e.y);
-  if(ENEMY_FLIP[e.kind]) ctx.rotate(Math.PI);
-  if(e.shield>0){
-   ctx.globalAlpha=0.35;
-   ctx.fillStyle="#22dcff";
-   ctx.beginPath(); ctx.arc(0,0,R*1.5,0,Math.PI*2); ctx.fill();
-   ctx.globalAlpha=1;
-  }
-  let s=R*2.9;
-  ctx.shadowColor=acc; ctx.shadowBlur=14;
-  ctx.drawImage(img,-s/2,-s/2,s,s);
-  ctx.shadowBlur=0;
-  if(e.hitFlash>0){
-   ctx.globalAlpha=0.5;
-   ctx.globalCompositeOperation="lighter";
+   ctx.save();
+   ctx.translate(e.x,e.y);
+   /* hp bar — drawn before any flip rotation so it always floats above the ship */
+   if(e.maxHp>1){
+    let bw=R*2, bh=4;
+    ctx.fillStyle="rgba(4,8,20,.8)"; ctx.fillRect(-bw/2,-R*1.95,bw,bh);
+    ctx.fillStyle=e.shield>0?"#22dcff":"#ff2f4d";
+    ctx.fillRect(-bw/2,-R*1.95,bw*Math.max(0,e.hp/e.maxHp),bh);
+   }
+   ctx.save();
+   if(ENEMY_FLIP[e.kind]) ctx.rotate(Math.PI);
+   if(e.shield>0){
+    ctx.globalAlpha=0.35;
+    ctx.fillStyle="#22dcff";
+    ctx.beginPath(); ctx.arc(0,0,R*1.5,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=1;
+   }
+   let s=R*2.9;
+   ctx.shadowColor=acc; ctx.shadowBlur=14;
    ctx.drawImage(img,-s/2,-s/2,s,s);
-   ctx.globalCompositeOperation="source-over";
-   ctx.globalAlpha=1;
-  }
-  /* hp bar */
-  if(e.maxHp>1){
-   let bw=R*2, bh=4;
-   ctx.fillStyle="rgba(4,8,20,.8)"; ctx.fillRect(-bw/2,-R*1.55,bw,bh);
-   ctx.fillStyle=e.shield>0?"#22dcff":"#ff2f4d";
-   ctx.fillRect(-bw/2,-R*1.55,bw*Math.max(0,e.hp/e.maxHp),bh);
-  }
-  ctx.restore();
-  return;
+   ctx.shadowBlur=0;
+   if(e.hitFlash>0){
+    ctx.globalAlpha=0.5;
+    ctx.globalCompositeOperation="lighter";
+    ctx.drawImage(img,-s/2,-s/2,s,s);
+    ctx.globalCompositeOperation="source-over";
+     ctx.globalAlpha=1;
+    }
+    ctx.restore();
+   ctx.restore();
+   return;
  }
 
  ctx.save();
