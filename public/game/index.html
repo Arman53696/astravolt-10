@@ -108,7 +108,7 @@ html,body{
 @keyframes bossPulse{0%,100%{box-shadow:0 0 14px rgba(255,64,89,.55),inset 0 0 12px rgba(255,64,89,.35)}50%{box-shadow:0 0 32px rgba(255,64,89,.95),inset 0 0 20px rgba(255,64,89,.6)}}
 .lvl-node.boss.locked{animation:none}
 .lvl-node .boss-ic{width:24px;height:24px;color:#ff8a9c;filter:drop-shadow(0 0 6px rgba(255,64,89,.9));margin-top:2px}
-.lvl-node.locked .boss-ic{color:#9fb0c9;filter:none}
+.lvl-node.locked .boss-ic{color:#ff4059;filter:drop-shadow(0 0 5px rgba(255,64,89,.65))}
 .boss-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:1.5px;
   color:#ffd7de;background:linear-gradient(90deg,#7a0f1e,#c81e3a);padding:2px 8px;border-radius:6px;
   border:1px solid rgba(255,120,140,.7);box-shadow:0 0 8px rgba(255,64,89,.7);white-space:nowrap;z-index:3}
@@ -3450,6 +3450,7 @@ let savedUpgSalvage=localStorage.getItem("cyberUpgSalvage");
 let savedUpgHealth=localStorage.getItem("cyberUpgHealth");
 let savedUpgShieldTime=localStorage.getItem("cyberUpgShieldTime");
 let savedUpgCoinBonus=localStorage.getItem("cyberUpgCoinBonus");
+let savedUpgShipGun=localStorage.getItem("cyberUpgShipGun");
 let savedMaxLevel=localStorage.getItem("cyberMaxLevel");
 let savedOwnedSkins=localStorage.getItem("cyberOwnedSkins");
 let savedEquippedSkin=localStorage.getItem("cyberEquippedSkin");
@@ -3482,7 +3483,8 @@ startShield:savedUpgStartShield!==null ? Number(savedUpgStartShield) : 0,
 salvage:savedUpgSalvage!==null ? Number(savedUpgSalvage) : 0,
 health:savedUpgHealth!==null ? Number(savedUpgHealth) : 0,
 shieldTime:savedUpgShieldTime!==null ? Number(savedUpgShieldTime) : 0,
-coinBonus:savedUpgCoinBonus!==null ? Number(savedUpgCoinBonus) : 0
+coinBonus:savedUpgCoinBonus!==null ? Number(savedUpgCoinBonus) : 0,
+shipGun:savedUpgShipGun!==null ? Number(savedUpgShipGun) : 0
 };
 
 /* highest level the player has unlocked on the level map */
@@ -3528,6 +3530,7 @@ localStorage.setItem("cyberUpgSalvage",upgrades.salvage);
 localStorage.setItem("cyberUpgHealth",upgrades.health);
 localStorage.setItem("cyberUpgShieldTime",upgrades.shieldTime);
 localStorage.setItem("cyberUpgCoinBonus",upgrades.coinBonus);
+localStorage.setItem("cyberUpgShipGun",upgrades.shipGun);
 localStorage.setItem("cyberMaxLevel",maxLevelUnlocked);
 localStorage.setItem("cyberOwnedSkins",ownedSkins.join(","));
 localStorage.setItem("cyberEquippedSkin",equippedSkin);
@@ -5152,9 +5155,13 @@ const BOSS_BAR_COLORS=["#c23cff","#ff3fb0","#38bdf8","#22e56a","#ff3048"];
 function bossBarCount(lvl){
 return 1+Math.min(4,Math.floor((lvl-1)/2));
 }
+function gunLevel(){ return upgrades.shipGun||0; }
+function gunDoubleShot(){ return gunLevel()>=3; }
+function gunPurple(){ return gunLevel()>=7; }
+function gunDamageMult(){ let g=gunLevel(); return g>=10?4:(g>=7?2:1); }
 function playerBulletDamage(){
 /* slightly stronger baseline while keeping the level curve gradual */
-return 2+Math.floor(level/5);
+return (2+Math.floor(level/5))*gunDamageMult();
 }
 
 /* reference boss artwork — one sprite per boss, drawn instead of the
