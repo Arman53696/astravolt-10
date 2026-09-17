@@ -3642,6 +3642,10 @@ let savedEquippedSkin=localStorage.getItem("cyberEquippedSkin");
 
 let coins=savedCoins!==null ? Number(savedCoins) : 20;
 
+/* "No Ads" pack (Play product id: ad_4) — once owned, every ad
+   (interstitial + rewarded revive/double-credits) is switched off */
+let adsRemoved=localStorage.getItem("cyberAdsRemoved")==="1";
+
 /* one best score per difficulty; an older single "cyberBest" save
    (from before per-difficulty tracking) is migrated into Normal */
 let bestScores={
@@ -3719,6 +3723,7 @@ localStorage.setItem("cyberUpgShipGun",upgrades.shipGun);
 localStorage.setItem("cyberMaxLevel",maxLevelUnlocked);
 localStorage.setItem("cyberOwnedSkins",ownedSkins.join(","));
 localStorage.setItem("cyberEquippedSkin",equippedSkin);
+localStorage.setItem("cyberAdsRemoved",adsRemoved?"1":"0");
 
 localStorage.setItem("cyberUpdatedAt",Date.now());
 
@@ -4183,12 +4188,26 @@ return;
 }
 
 let restoredCoins=0;
+let restoredNoAds=false;
 
 for(let purchase of purchases){
 
 let pack=packs.find(p=>p.sku===purchase.itemId);
 
 if(!pack) continue;
+
+if(pack.removeAds){
+
+/* non-consumable stays owned on Play — just re-flag it */
+adsRemoved=true;
+
+restoredNoAds=true;
+
+saveData();
+
+continue;
+
+}
 
 /* isolate each token so one failed consume can't stop the
    rest of a batch of pending purchases from being restored */
@@ -4202,7 +4221,7 @@ restoredCoins+=pack.coins;
 
 }
 
-if(restoredCoins>0){
+if(restoredCoins>0 || restoredNoAds){
 
 coins+=restoredCoins;
 
@@ -4210,7 +4229,9 @@ saveData();
 
 syncCoinDisplays();
 
-showToast("Restored "+restoredCoins+" coins from a pending purchase","#10b981");
+renderShop();
+
+showToast(restoredNoAds ? "No Ads pack restored — ads are off" : "Restored "+restoredCoins+" coins from a pending purchase","#10b981");
 
 }else{
 
@@ -5705,6 +5726,17 @@ let pack=packs.find(p=>p.sku===purchase.itemId);
 
 if(!pack) continue;
 
+if(pack.removeAds){
+
+/* non-consumable: still owned on Play's side, just re-flag it */
+adsRemoved=true;
+
+saveData();
+
+continue;
+
+}
+
 try{
 
 await digitalGoodsService.consume(purchase.purchaseToken);
@@ -5805,6 +5837,17 @@ pack.price=formatted;
 
 async function purchaseSku(sku,coinsAmount,btnEl){
 
+let pack=packs.find(p=>p.sku===sku);
+let isRemoveAds=!!(pack && pack.removeAds);
+
+if(isRemoveAds && adsRemoved){
+
+showToast("Ads are already removed on this account","#10b981");
+
+return;
+
+}
+
 if(!billingAvailable){
 
 showToast("Real purchases only work in the app installed from Google Play","#ef4444");
@@ -5845,16 +5888,28 @@ purchaseToken=paymentResponse.details.purchaseToken;
 
 await paymentResponse.complete("success");
 
+if(isRemoveAds){
+
+/* non-consumable: never consumed, so Play keeps it owned and it
+   restores automatically on reinstall / new device */
+adsRemoved=true;
+
+}else{
+
 /* consumable coin pack: acknowledge + consume so it can be bought again */
 await digitalGoodsService.consume(purchaseToken);
 
 coins+=coinsAmount;
+
+}
 
 saveData();
 
 syncCoinDisplays();
 
 playPowerUp();
+
+if(isRemoveAds) showToast("Ads removed — enjoy the game!","#10b981");
 
 if(btnEl){
 
@@ -5915,6 +5970,7 @@ purchaseInProgress=false;
 
 const packs=[
 
+{coins:0,price:"$4.01",sku:"ad_4",removeAds:true},
 {coins:450,price:"$0.50",sku:"coin_450"},
 {coins:900,price:"$1.00",sku:"coin_900"},
 {coins:915,price:"$1.01",sku:"coin_915"},
@@ -5965,6 +6021,35 @@ let div=document.createElement("div");
 
 div.className="shop-item"+(p.popular?" popular":"");
 
+if(p.removeAds){
+
+let owned=adsRemoved;
+
+div.classList.add("popular");
+
+div.innerHTML=`
+
+<div class="popular-badge">NO ADS</div>
+
+<div class="coin-icon"><svg class="ic"><use href="#i-shield"/></svg></div>
+
+<div class="coin-amount">
+Remove Ads
+</div>
+
+<div class="value-tag">
+${owned?"AD-FREE FOREVER":"No ads · ever"}
+</div>
+
+
+<button class="buy-btn" ${owned?"disabled":""} ${billingChecked && !billingAvailable && !owned ? "style=\"opacity:.55;\"" : ""}>
+<span class="btn-label">${owned?"OWNED ✓":p.price}</span>
+</button>
+
+`;
+
+}else{
+
 let priceNum=parseFloat(String(p.price).replace(/[^0-9.]/g,""))||0;
 
 let perCoin=(priceNum/p.coins*100).toFixed(2);
@@ -5989,6 +6074,8 @@ ${perCoin}¢ / credit
 </button>
 
 `;
+
+}
 
 let btn=div.querySelector(".buy-btn");
 
@@ -7303,7 +7390,7 @@ function refreshAdReviveBtn(victory){
 let btn=document.getElementById("adReviveBtn");
 if(!btn) return;
 
-if(victory||adReviveUsed>=MAX_AD_REVIVES){
+if(victory||adsRemoved||adReviveUsed>=MAX_AD_REVIVES){
 btn.style.display="none";
 return;
 }
@@ -7318,6 +7405,8 @@ if(label) label.innerText="REVIVE · WATCH AD (FREE)";
 
 
 function adRevive(){
+
+if(adsRemoved) return;
 
 if(adReviveUsed>=MAX_AD_REVIVES) return;
 
@@ -7344,6 +7433,8 @@ grantRevive();
 /* ---- double the credits earned this level by watching an ad ---- */
 
 function adDoubleCoins(){
+
+if(adsRemoved) return;
 
 if(adDoubleUsed) return;
 
@@ -7485,7 +7576,7 @@ let lbl=document.getElementById("adDoubleCoinLabel");
 if(lbl) lbl.innerText="DOUBLE CREDITS ("+runCoins+") — WATCH AD";
 dbl.disabled=false;
 dbl.style.opacity="1";
-dbl.style.display=runCoins>0?"block":"none";
+dbl.style.display=(runCoins>0 && !adsRemoved)?"block":"none";
 }
 
 levelsSinceAd++;
@@ -7495,6 +7586,7 @@ document.getElementById("levelDoneModal").style.display="flex";
 }
 
 function maybeInterstitial(){
+if(adsRemoved) return;
 if(levelsSinceAd<LEVELS_PER_AD) return;
 levelsSinceAd=0;
 window.Ads.showInterstitial();
@@ -10063,6 +10155,7 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
     var store = CdvPurchase.store;
     var PLATFORM = CdvPurchase.Platform.GOOGLE_PLAY;
     var TYPE = CdvPurchase.ProductType.CONSUMABLE;
+    var TYPE_NONCONSUMABLE = CdvPurchase.ProductType.NON_CONSUMABLE;
 
     var pendingBtn = null;
     var pendingSku = null;
@@ -10077,6 +10170,12 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
     function grant(sku, silent) {
       var pack = packFor(sku);
       if (!pack) return;
+      if (pack.removeAds) {
+        adsRemoved = true;
+        saveData();
+        showToast("Ads removed — enjoy the game!", "#10b981");
+        return;
+      }
       coins += pack.coins;
       saveData();
       syncCoinDisplays();
@@ -10111,7 +10210,11 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 
     store.register(
       packs.map(function (p) {
-        return { id: p.sku, type: TYPE, platform: PLATFORM };
+        return {
+          id: p.sku,
+          type: p.removeAds ? TYPE_NONCONSUMABLE : TYPE,
+          platform: PLATFORM,
+        };
       })
     );
 
@@ -10175,6 +10278,11 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
     };
 
     purchaseSku = function (sku, coinsAmount, btnEl) {
+      var pack = packFor(sku);
+      if (pack && pack.removeAds && adsRemoved) {
+        showToast("Ads are already removed on this account", "#10b981");
+        return;
+      }
       if (!billingAvailable) {
         showToast("Google Play Billing isn't ready yet — try again", "#ef4444");
         return;
