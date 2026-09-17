@@ -7104,15 +7104,18 @@ function grantRevive(){
 reviveCount++;
 
 document.getElementById("overModal").style.display="none";
-enemies=[];
-darkOrbs=[];
+
+/* enemies keep their position and health — the fight resumes right where it froze */
 bossBullets=[];
 
 /* the player restarts exactly where they died */
 targetX=player.x;
 targetY=player.y;
 
-reviveInvincible=150;
+reviveInvincible=60;
+
+/* 5 seconds of shield after reviving */
+shieldTime=300;
 
 playerMaxHp=maxHealth();
 playerHp=playerMaxHp;
