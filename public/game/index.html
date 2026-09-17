@@ -3371,6 +3371,11 @@ function setSettingsTab(tab){
 </script>
 
 
+<!-- Cordova bridge: only exists inside the native Android/iOS app.
+     In a normal browser this 404s silently and is ignored, but inside the
+     APK it is what loads cordova-plugin-purchase (window.CdvPurchase),
+     which the native Google Play Billing bridge at the bottom waits for. -->
+<script src="cordova.js"></script>
 <script src="firebase-config.js"></script>
 <script src="cloud-save.js"></script>
 <script src="ads.js"></script>
