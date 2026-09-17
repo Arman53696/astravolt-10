@@ -7386,8 +7386,7 @@ if(cost===null) return;
 
 if(coins<cost){
 
-document.getElementById("overModal").style.display="none";
-document.getElementById("noCoinModal").style.display="flex";
+showToast("Insufficient balance","#ef4444");
 return;
 
 }
