@@ -4227,33 +4227,10 @@ localStorage.setItem("cyberLoggedIn",isGuest?"guest":(isLoggedIn?"1":"0"));
 
 function openAccountPicker(){
 
-let list=document.getElementById("accountList");
+/* Real Google sign-in: opens Google's own account chooser / login
+   page in a popup window via Google Identity Services. */
 
-list.innerHTML="";
-
-mockAccounts.forEach(acc=>{
-
-let initial=acc.name.charAt(0);
-
-let row=document.createElement("div");
-
-row.className="gpicker-item";
-
-row.innerHTML=`
-<div class="gpicker-avatar" style="background:${acc.color}">${initial}</div>
-<div class="gpicker-info">
-<div class="gpicker-name">${acc.name}</div>
-<div class="gpicker-email">${acc.email}</div>
-</div>
-`;
-
-row.onclick=()=>chooseAccount(acc);
-
-list.appendChild(row);
-
-});
-
-document.getElementById("accountPickerModal").style.display="flex";
+startGoogleLogin();
 
 }
 
