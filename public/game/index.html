@@ -2696,7 +2696,8 @@ Continue as Guest
 </button>
 
 <p class="small-text" style="margin-top:16px;font-size:10px;">
-By continuing you agree to the Terms & Privacy Policy.
+By continuing you agree to the <span style="color:#4da3ff;text-decoration:underline;" onclick="openLegal('tc')">Terms</span> &amp; <span style="color:#4da3ff;text-decoration:underline;" onclick="openLegal('pp')">Privacy Policy</span>.<br>
+Support: <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a>
 </p>
 
 </div>
@@ -3270,6 +3271,15 @@ onchange="onMusicVolumeChange(this.value)">
 <svg class="ic srow-chev"><use href="#i-chevron"/></svg>
 </div>
 
+<div class="setting-row" data-tabs="about" onclick="window.open('mailto:support.nexorastudio@gmail.com','_blank')">
+<div class="srow-ic c-blue"><svg class="ic"><use href="#i-info"/></svg></div>
+<div class="setting-label">
+<div class="setting-name">Contact Support</div>
+<div class="setting-desc">support.nexorastudio@gmail.com</div>
+</div>
+<svg class="ic srow-chev"><use href="#i-chevron"/></svg>
+</div>
+
 <div class="version-text" data-tabs="about">
 Astravolt · v1.5
 </div>
@@ -3296,24 +3306,29 @@ Astravolt · v1.5
 <button class="legal-close" onclick="closeLegal('pp')">✕</button>
 </div>
 <div class="legal-body">
-<p><b>Astravolt</b> — effective from 2026. This policy explains what information the game uses and how it is handled.</p>
+<p><b>Astravolt</b> by Nexora Studio — effective 17 September 2026. This policy explains what information the game collects, how it is used, and the choices you have. Contact us any time at <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a>.</p>
 <h4>WHAT WE COLLECT</h4>
-<p>Astravolt is built to work with as little data as possible. Depending on how you play, the game may use:</p>
-<p>• <b>Guest play</b> — no account needed. Your coins, upgrades, ships and level progress are saved only on your own device (local storage).</p>
+<p>• <b>Guest play</b> — no account needed. Your coins, upgrades, ships and level progress are saved only on your own device (local storage) and never leave it.</p>
 <p>• <b>Google sign-in (optional)</b> — if you choose to sign in, we receive your name, email address and profile picture from Google, only to show your profile and keep your save synced.</p>
 <p>• <b>Game progress</b> — score, coins, upgrades, unlocked ships and level progress, so your save can be restored and synced between your devices.</p>
+<p>• <b>Usage data</b> — anonymous usage and crash statistics collected through Google Analytics for Firebase to fix bugs and improve the game.</p>
+<p>• <b>Advertising &amp; device identifiers</b> — the advertising ID (or a resettable device identifier) may be used to show ads and measure ad performance.</p>
+<h4>THIRD-PARTY SERVICES</h4>
+<p>Astravolt relies on these trusted providers, each governed by its own privacy policy:</p>
+<p>• <b>Google AdMob</b> — serves the ads inside the game. AdMob may use your advertising ID to deliver and measure ads. You can reset your advertising ID or opt out of ad personalization in your Android device settings (Privacy → Ads). You can also remove all ads permanently with the "Remove Ads" in-app purchase.</p>
+<p>• <b>Google Firebase</b> — powers secure sign-in, cloud save (stored in the Singapore region) and anonymous usage analytics.</p>
+<p>• <b>Google Play Billing</b> — processes all in-app purchases. Payment details are handled entirely by Google; we never see or store your card details.</p>
 <h4>WHAT WE NEVER DO</h4>
-<p>• We do not sell, rent or share your personal information with advertisers.</p>
-<p>• We do not show third-party ads or use ad trackers.</p>
+<p>• We do not sell, rent or share your personal information with anyone except the providers above, strictly to run the game.</p>
 <p>• We do not access your contacts, files, camera, microphone or precise location.</p>
-<h4>CLOUD SAVE</h4>
-<p>When you are signed in, your save is stored securely in our cloud save service so you can continue on another device. If you play as a guest, everything stays on your device and clearing browser data will erase it.</p>
-<h4>IN-GAME PURCHASES</h4>
-<p>Coin packs are processed by the app store or payment provider you use. We never see or store your card details.</p>
-<h4>YOUR CHOICES</h4>
-<p>You can sign out at any time from Settings → Account. You can reset your local progress from Settings → Reset. To delete your cloud save, contact us and we will remove it.</p>
+<h4>DATA RETENTION &amp; DELETION</h4>
+<p>Guest progress stays on your device until you clear your browser/app data or reset your progress in Settings. Cloud saves are kept while your account is active. To permanently delete your account and cloud save, email us at <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a> and we will delete it within 30 days and confirm by reply.</p>
+<h4>CHILDREN</h4>
+<p>Astravolt is not directed at children under 13 and we do not knowingly collect personal information from them. If you believe a child has provided us personal information, contact us and we will delete it.</p>
+<h4>PERMISSIONS</h4>
+<p>The game uses the Internet connection (ads, cloud save, purchases) and the advertising ID permission. No other sensitive permissions are requested.</p>
 <h4>CONTACT</h4>
-<p>Questions about privacy? Reach us through the Astravolt support channel listed on the game page.</p>
+<p>Questions about privacy? Email <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a> — we reply to every message.</p>
 </div>
 </div>
 </div>
@@ -3325,17 +3340,21 @@ Astravolt · v1.5
 <button class="legal-close" onclick="closeLegal('tc')">✕</button>
 </div>
 <div class="legal-body">
-<p>Welcome to <b>Astravolt</b>. By playing the game you agree to these terms.</p>
+<p>Welcome to <b>Astravolt</b> by Nexora Studio, effective 17 September 2026. By playing the game you agree to these terms. Questions? <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a>.</p>
 <h4>THE GAME</h4>
-<p>Astravolt is a free arcade space shooter. We may add, change or remove levels, ships, upgrades, enemies, prices and features at any time to keep the game balanced and fun.</p>
+<p>Astravolt is a free arcade space shooter supported by ads and optional in-app purchases. We may add, change or remove levels, ships, upgrades, enemies, prices and features at any time to keep the game balanced and fun.</p>
 <h4>YOUR ACCOUNT</h4>
-<p>You may play as a guest or sign in with Google. You are responsible for the device you play on. Guest progress lives only on your device — if you clear your browser data, it cannot be recovered.</p>
+<p>You may play as a guest or sign in with Google. You are responsible for your account and the device you play on. Guest progress lives only on your device — if you clear your browser data, it cannot be recovered. You can sign out or request deletion of your account and cloud save at any time by contacting us at <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a>.</p>
+<h4>ADS</h4>
+<p>The game shows ads served by Google AdMob. Ad placements include rewarded ads (optional — you choose to watch them for a revive or bonus) and occasional interstitial ads between levels. You can remove all ads permanently by purchasing the "Remove Ads" pack. Ads are governed by Google's advertising policies.</p>
+<h4>PURCHASES &amp; REFUNDS</h4>
+<p>All purchases (coin packs and the Remove Ads pack) are processed by Google Play Billing. Prices are shown before you confirm. Refunds and payment disputes are handled under Google Play's refund policy — contact Google Play Support or email us at <a href="mailto:support.nexorastudio@gmail.com" style="color:#4da3ff;">support.nexorastudio@gmail.com</a> and we will help.</p>
 <h4>VIRTUAL ITEMS</h4>
-<p>Coins, ships, upgrades and revive items are virtual goods inside the game. They have no real-world value, cannot be exchanged for money, and are not refundable except where required by law or the app store's own policy.</p>
+<p>Coins, ships, upgrades and revive items are virtual goods inside the game. They have no real-world value, cannot be exchanged for money, and are not refundable except where required by law or Google Play's policy.</p>
 <h4>FAIR PLAY</h4>
 <p>Do not use cheats, bots, exploits or modified versions of the game, and do not try to disrupt the game or its cloud save service. We may reset progress or block access for accounts that abuse the game.</p>
 <h4>OWNERSHIP</h4>
-<p>All artwork, sprites, music, code and the Astravolt name belong to the game's creators. You may not copy, redistribute or resell them.</p>
+<p>All artwork, sprites, music, code and the Astravolt name belong to Nexora Studio. You may not copy, redistribute or resell them.</p>
 <h4>NO WARRANTY</h4>
 <p>The game is provided "as is". We do our best to keep it running and your saves safe, but we cannot guarantee uninterrupted service or that progress will never be lost.</p>
 <h4>CHANGES</h4>
