@@ -5710,6 +5710,17 @@ let pack=packs.find(p=>p.sku===purchase.itemId);
 
 if(!pack) continue;
 
+if(pack.removeAds){
+
+/* non-consumable: still owned on Play's side, just re-flag it */
+adsRemoved=true;
+
+saveData();
+
+continue;
+
+}
+
 try{
 
 await digitalGoodsService.consume(purchase.purchaseToken);
