@@ -5815,6 +5815,10 @@ effect:lvl=>lvl===0?"":"+"+(5+lvl*2)+" credits per pickup"},
 {id:"magnet",name:"Coin Magnet",icon:"🧲",desc:"Pulls power-ups toward your ship",max:5,costs:[300,650,1200,1900,2800],
 effect:lvl=>lvl===0?"":"Pull range "+(60+lvl*50)+"px"},
 
+{id:"shipGun",name:"Ship Gun",icon:"🔱",desc:"Lv3 double shot · Lv7 purple 2x dmg · Lv10 4x dmg",max:10,
+costs:[500,900,1500,2200,3000,4000,5200,6600,8200,10000],
+effect:lvl=>lvl===0?"":(lvl<3?"Lv3: double shot":(lvl<7?"Double shot · Lv7: purple 2x dmg":(lvl<10?"Double shot · purple · 2x damage":"Double shot · purple · 4x damage")))},
+
 {id:"magnetPlaceholderRemoved",name:"",icon:"",desc:"",max:0,costs:[],effect:()=>""}
 
 ].filter(d=>d.max>0);
