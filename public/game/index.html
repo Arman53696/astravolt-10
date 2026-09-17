@@ -5350,6 +5350,14 @@ let slowTime=0;
 let shakeTime=0;
 
 let reviveCount=0;
+
+/* ad related run state */
+let runCoins=0;            /* credits collected in the current run */
+let adReviveUsed=0;        /* free ad revives already used this run */
+let adDoubleUsed=false;    /* double-coins ad already claimed this level */
+let levelsSinceAd=0;       /* levels finished since the last interstitial */
+const MAX_AD_REVIVES=2;    /* free ad revives allowed per run */
+const LEVELS_PER_AD=3;     /* interstitial after every N finished levels */
 let reviveInvincible=0;
 let pendingBoss=null;
 
@@ -7064,6 +7072,9 @@ return REVIVE_COSTS[reviveCount];
 
 function refreshReviveBtn(victory){
 
+refreshAdReviveBtn(victory);
+
+
 let btn=document.getElementById("reviveBtn");
 if(!btn) return;
 
@@ -7090,6 +7101,88 @@ label.innerText=
 let affordable=coins>=cost;
 
 btn.style.opacity=affordable?"1":"0.55";
+
+}
+
+
+/* ---- free revive by watching a rewarded ad ---- */
+
+function refreshAdReviveBtn(victory){
+
+let btn=document.getElementById("adReviveBtn");
+if(!btn) return;
+
+if(victory||adReviveUsed>=MAX_AD_REVIVES){
+btn.style.display="none";
+return;
+}
+
+btn.style.display="block";
+btn.style.opacity="1";
+
+let label=document.getElementById("adReviveBtnLabel");
+if(label) label.innerText="REVIVE · WATCH AD (FREE)";
+
+}
+
+
+function adRevive(){
+
+if(adReviveUsed>=MAX_AD_REVIVES) return;
+
+let btn=document.getElementById("adReviveBtn");
+if(btn) btn.style.opacity="0.5";
+
+window.Ads.showRewarded("FREE REVIVE").then(function(ok){
+
+if(btn) btn.style.opacity="1";
+
+if(!ok){
+if(btn) btn.style.display="none";
+return;
+}
+
+adReviveUsed++;
+grantRevive();
+
+});
+
+}
+
+
+/* ---- double the credits earned this level by watching an ad ---- */
+
+function adDoubleCoins(){
+
+if(adDoubleUsed) return;
+
+let btn=document.getElementById("adDoubleCoinBtn");
+if(btn) btn.style.opacity="0.5";
+
+let bonus=runCoins;
+
+window.Ads.showRewarded("DOUBLE CREDITS").then(function(ok){
+
+if(btn) btn.style.opacity="1";
+
+if(!ok) return;
+
+adDoubleUsed=true;
+coins+=bonus;
+
+saveData();
+syncCoinDisplays();
+
+if(btn) btn.style.display="none";
+
+let lbl=document.getElementById("adDoubleCoinLabel");
+if(lbl) lbl.innerText="+"+bonus+" CREDITS CLAIMED";
+if(btn) btn.style.display="block";
+if(btn) btn.disabled=true;
+
+playPowerUp();
+
+});
 
 }
 
@@ -7194,17 +7287,38 @@ syncCoinDisplays();
 saveData();
 syncBackgroundMusic();
 
+/* offer to double the credits collected this level */
+adDoubleUsed=false;
+let dbl=document.getElementById("adDoubleCoinBtn");
+if(dbl){
+let lbl=document.getElementById("adDoubleCoinLabel");
+if(lbl) lbl.innerText="DOUBLE CREDITS ("+runCoins+") — WATCH AD";
+dbl.disabled=false;
+dbl.style.opacity="1";
+dbl.style.display=runCoins>0?"block":"none";
+}
+
+levelsSinceAd++;
+
 document.getElementById("levelDoneModal").style.display="flex";
 
 }
 
+function maybeInterstitial(){
+if(levelsSinceAd<LEVELS_PER_AD) return;
+levelsSinceAd=0;
+window.Ads.showInterstitial();
+}
+
 function levelDoneNext(){
 document.getElementById("levelDoneModal").style.display="none";
+maybeInterstitial();
 startMatch(lastClearedLevel+1);
 }
 
 function levelDoneReplay(){
 document.getElementById("levelDoneModal").style.display="none";
+maybeInterstitial();
 startMatch(lastClearedLevel);
 }
 
@@ -8597,6 +8711,7 @@ if(p.type==="coin"){
 
 let cv=coinPickupValue();
 coins+=cv;
+runCoins+=cv;
 addFloatText(p.x,p.y-10,"+"+cv+" CR","#fbbf24",17);
 syncCoinDisplays();
 saveData();
