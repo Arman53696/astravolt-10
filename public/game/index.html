@@ -3430,8 +3430,112 @@ showToast("Sign-in failed — please try again");
 
 function initGoogleSignIn(){
 
-/* Sign-in UI removed */
+/* Sign-in UI removed - login starts from the account menu button */
 return;
+
+}
+
+
+/* ---- Real Google login popup (OAuth implicit flow) ----
+   google.accounts.oauth2.initTokenClient opens Google's own
+   login / account-chooser page in a popup, then we read the
+   profile from the userinfo endpoint. */
+
+let gsiTokenClient=null;
+
+function startGoogleLogin(){
+
+if(!(window.google&&google.accounts&&google.accounts.oauth2)){
+
+showToast("Google sign-in unavailable — check your connection");
+return;
+
+}
+
+try{
+
+if(!gsiTokenClient){
+
+gsiTokenClient=google.accounts.oauth2.initTokenClient({
+client_id:GOOGLE_CLIENT_ID,
+scope:"openid email profile",
+prompt:"select_account",
+callback:(resp)=>{
+
+if(!resp||!resp.access_token){
+
+showToast("Sign-in cancelled");
+return;
+
+}
+
+fetchGoogleProfile(resp.access_token);
+
+},
+error_callback:(err)=>{
+
+console.error("Google sign-in error:",err);
+showToast("Sign-in cancelled");
+
+}
+});
+
+}
+
+gsiTokenClient.requestAccessToken();
+
+}catch(err){
+
+console.error("Google sign-in failed to start:",err);
+showToast("Sign-in failed — please try again");
+
+}
+
+}
+
+
+async function fetchGoogleProfile(accessToken){
+
+try{
+
+let res=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{
+headers:{Authorization:"Bearer "+accessToken}
+});
+
+if(!res.ok) throw new Error("userinfo "+res.status);
+
+let p=await res.json();
+
+let colorIdx=Math.abs(
+(p.sub||p.email||"").split("").reduce((a,c)=>a+c.charCodeAt(0),0)
+)%gsiAvatarColors.length;
+
+userName=p.name||p.email;
+userEmail=p.email;
+userColor=gsiAvatarColors[colorIdx];
+isLoggedIn=true;
+isGuest=false;
+
+saveLoginData();
+
+(document.getElementById("loginModal")||{style:{}}).style.display="none";
+let pick=document.getElementById("accountPickerModal");
+if(pick) pick.style.display="none";
+
+refreshProfileUI();
+
+if(typeof initCloudSave==="function") initCloudSave();
+
+showToast("Signed in as "+(p.given_name||userName));
+
+goHome();
+
+}catch(err){
+
+console.error("Google profile fetch failed:",err);
+showToast("Sign-in failed — please try again");
+
+}
 
 }
 
