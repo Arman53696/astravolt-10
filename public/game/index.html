@@ -108,7 +108,7 @@ html,body{
 @keyframes bossPulse{0%,100%{box-shadow:0 0 14px rgba(255,64,89,.55),inset 0 0 12px rgba(255,64,89,.35)}50%{box-shadow:0 0 32px rgba(255,64,89,.95),inset 0 0 20px rgba(255,64,89,.6)}}
 .lvl-node.boss.locked{animation:none}
 .lvl-node .boss-ic{width:24px;height:24px;color:#ff8a9c;filter:drop-shadow(0 0 6px rgba(255,64,89,.9));margin-top:2px}
-.lvl-node.locked .boss-ic{color:#9fb0c9;filter:none}
+.lvl-node.locked .boss-ic{color:#ff4059;filter:drop-shadow(0 0 5px rgba(255,64,89,.65))}
 .boss-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;letter-spacing:1.5px;
   color:#ffd7de;background:linear-gradient(90deg,#7a0f1e,#c81e3a);padding:2px 8px;border-radius:6px;
   border:1px solid rgba(255,120,140,.7);box-shadow:0 0 8px rgba(255,64,89,.7);white-space:nowrap;z-index:3}
@@ -3450,6 +3450,7 @@ let savedUpgSalvage=localStorage.getItem("cyberUpgSalvage");
 let savedUpgHealth=localStorage.getItem("cyberUpgHealth");
 let savedUpgShieldTime=localStorage.getItem("cyberUpgShieldTime");
 let savedUpgCoinBonus=localStorage.getItem("cyberUpgCoinBonus");
+let savedUpgShipGun=localStorage.getItem("cyberUpgShipGun");
 let savedMaxLevel=localStorage.getItem("cyberMaxLevel");
 let savedOwnedSkins=localStorage.getItem("cyberOwnedSkins");
 let savedEquippedSkin=localStorage.getItem("cyberEquippedSkin");
@@ -3482,7 +3483,8 @@ startShield:savedUpgStartShield!==null ? Number(savedUpgStartShield) : 0,
 salvage:savedUpgSalvage!==null ? Number(savedUpgSalvage) : 0,
 health:savedUpgHealth!==null ? Number(savedUpgHealth) : 0,
 shieldTime:savedUpgShieldTime!==null ? Number(savedUpgShieldTime) : 0,
-coinBonus:savedUpgCoinBonus!==null ? Number(savedUpgCoinBonus) : 0
+coinBonus:savedUpgCoinBonus!==null ? Number(savedUpgCoinBonus) : 0,
+shipGun:savedUpgShipGun!==null ? Number(savedUpgShipGun) : 0
 };
 
 /* highest level the player has unlocked on the level map */
@@ -3528,6 +3530,7 @@ localStorage.setItem("cyberUpgSalvage",upgrades.salvage);
 localStorage.setItem("cyberUpgHealth",upgrades.health);
 localStorage.setItem("cyberUpgShieldTime",upgrades.shieldTime);
 localStorage.setItem("cyberUpgCoinBonus",upgrades.coinBonus);
+localStorage.setItem("cyberUpgShipGun",upgrades.shipGun);
 localStorage.setItem("cyberMaxLevel",maxLevelUnlocked);
 localStorage.setItem("cyberOwnedSkins",ownedSkins.join(","));
 localStorage.setItem("cyberEquippedSkin",equippedSkin);
@@ -5152,9 +5155,13 @@ const BOSS_BAR_COLORS=["#c23cff","#ff3fb0","#38bdf8","#22e56a","#ff3048"];
 function bossBarCount(lvl){
 return 1+Math.min(4,Math.floor((lvl-1)/2));
 }
+function gunLevel(){ return upgrades.shipGun||0; }
+function gunDoubleShot(){ return gunLevel()>=3; }
+function gunPurple(){ return gunLevel()>=7; }
+function gunDamageMult(){ let g=gunLevel(); return g>=10?4:(g>=7?2:1); }
 function playerBulletDamage(){
 /* slightly stronger baseline while keeping the level curve gradual */
-return 2+Math.floor(level/5);
+return (2+Math.floor(level/5))*gunDamageMult();
 }
 
 /* reference boss artwork — one sprite per boss, drawn instead of the
@@ -5808,6 +5815,10 @@ effect:lvl=>lvl===0?"":"+"+(5+lvl*2)+" credits per pickup"},
 {id:"magnet",name:"Coin Magnet",icon:"🧲",desc:"Pulls power-ups toward your ship",max:5,costs:[300,650,1200,1900,2800],
 effect:lvl=>lvl===0?"":"Pull range "+(60+lvl*50)+"px"},
 
+{id:"shipGun",name:"Ship Gun",icon:"🔱",desc:"Lv3 double shot · Lv7 purple 2x dmg · Lv10 4x dmg",max:10,
+costs:[500,900,1500,2200,3000,4000,5200,6600,8200,10000],
+effect:lvl=>lvl===0?"":(lvl<3?"Lv3: double shot":(lvl<7?"Double shot · Lv7: purple 2x dmg":(lvl<10?"Double shot · purple · 2x damage":"Double shot · purple · 4x damage")))},
+
 {id:"magnetPlaceholderRemoved",name:"",icon:"",desc:"",max:0,costs:[],effect:()=>""}
 
 ].filter(d=>d.max>0);
@@ -5823,6 +5834,7 @@ health:'<path d="M12 20s-7-4.4-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6C19 15.6 12 2
 coinBonus:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.6 10h4.8M9.6 14h4.8"/>',
 piercing:'<path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3.4"/>',
 startShield:'<path d="M12 3 5 6v5c0 5 3.3 8.2 7 10 3.7-1.8 7-5 7-10V6z"/><path d="M12 8.5v5M9.5 11h5"/>',
+shipGun:'<path d="M8 21V10l-2-2V3h4v4M16 21V10l2-2V3h-4v4"/><path d="M10 7h4"/><path d="M12 11v9"/>',
 };
 return S(G[id]||G.fireRate);
 }
@@ -5849,7 +5861,7 @@ segs+=`<div class="up-seg${i<level?" on":""}"></div>`;
 
 }
 
-let accents={fireRate:"#ffb01c",magnet:"#a855f7",shieldTime:"#22d3ee",health:"#ff2e55",coinBonus:"#fbbf24",salvage:"#22d3ee"};
+let accents={fireRate:"#ffb01c",magnet:"#a855f7",shieldTime:"#22d3ee",health:"#ff2e55",coinBonus:"#fbbf24",salvage:"#22d3ee",shipGun:"#c084fc"};
 
 let accent=accents[def.id]||"#38bdf8";
 
@@ -8425,18 +8437,18 @@ slowTime>0
 
 if(shootTick%rate===0){
 
-let bw=hasDamage?6:4;
-let bh=hasDamage?16:12;
+let bw=(hasDamage||gunPurple())?6:4;
+let bh=(hasDamage||gunPurple())?16:12;
 
 playShoot();
 
 let col=
 slowTime>0
 ?"#a855f7"
-:(hasDamage?"#ff0055":"#00f2fe");
+:(gunPurple()?"#c026ff":(hasDamage?"#ff0055":"#00f2fe"));
 
 
-if(hasDouble){
+if(hasDouble||gunDoubleShot()){
 
 bullets.push({
 x:player.x+4,
