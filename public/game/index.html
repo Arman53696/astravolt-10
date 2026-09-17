@@ -5971,6 +5971,35 @@ let div=document.createElement("div");
 
 div.className="shop-item"+(p.popular?" popular":"");
 
+if(p.removeAds){
+
+let owned=adsRemoved;
+
+div.classList.add("popular");
+
+div.innerHTML=`
+
+<div class="popular-badge">NO ADS</div>
+
+<div class="coin-icon"><svg class="ic"><use href="#i-shield"/></svg></div>
+
+<div class="coin-amount">
+Remove Ads
+</div>
+
+<div class="value-tag">
+${owned?"AD-FREE FOREVER":"No ads · ever"}
+</div>
+
+
+<button class="buy-btn" ${owned?"disabled":""} ${billingChecked && !billingAvailable && !owned ? "style=\"opacity:.55;\"" : ""}>
+<span class="btn-label">${owned?"OWNED ✓":p.price}</span>
+</button>
+
+`;
+
+}else{
+
 let priceNum=parseFloat(String(p.price).replace(/[^0-9.]/g,""))||0;
 
 let perCoin=(priceNum/p.coins*100).toFixed(2);
@@ -5995,6 +6024,8 @@ ${perCoin}¢ / credit
 </button>
 
 `;
+
+}
 
 let btn=div.querySelector(".buy-btn");
 
