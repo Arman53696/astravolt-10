@@ -7390,7 +7390,7 @@ function refreshAdReviveBtn(victory){
 let btn=document.getElementById("adReviveBtn");
 if(!btn) return;
 
-if(victory||adReviveUsed>=MAX_AD_REVIVES){
+if(victory||adsRemoved||adReviveUsed>=MAX_AD_REVIVES){
 btn.style.display="none";
 return;
 }
@@ -7582,6 +7582,7 @@ document.getElementById("levelDoneModal").style.display="flex";
 }
 
 function maybeInterstitial(){
+if(adsRemoved) return;
 if(levelsSinceAd<LEVELS_PER_AD) return;
 levelsSinceAd=0;
 window.Ads.showInterstitial();
@@ -10273,6 +10274,11 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
     };
 
     purchaseSku = function (sku, coinsAmount, btnEl) {
+      var pack = packFor(sku);
+      if (pack && pack.removeAds && adsRemoved) {
+        showToast("Ads are already removed on this account", "#10b981");
+        return;
+      }
       if (!billingAvailable) {
         showToast("Google Play Billing isn't ready yet — try again", "#ef4444");
         return;
