@@ -8515,7 +8515,7 @@ if(upgrades.magnet>0||shipPerk().magnet>0){
 
 let pcx=player.x+player.w/2;
 let pcy=player.y+player.h/2;
-let magnetRadius=60+upgrades.magnet*50+shipPerk().magnet;
+let magnetRadius=40+upgrades.magnet*30+shipPerk().magnet*0.6;
 let dx=pcx-p.x;
 let dy=pcy-p.y;
 let dist=Math.hypot(dx,dy);
