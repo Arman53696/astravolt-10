@@ -8190,10 +8190,11 @@ function drawEnemyShip(e){
     ctx.globalCompositeOperation="lighter";
     ctx.drawImage(img,-s/2,-s/2,s,s);
     ctx.globalCompositeOperation="source-over";
-    ctx.globalAlpha=1;
-   }
-  ctx.restore();
-  return;
+     ctx.globalAlpha=1;
+    }
+    ctx.restore();
+   ctx.restore();
+   return;
  }
 
  ctx.save();
