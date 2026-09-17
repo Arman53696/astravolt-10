@@ -17,3 +17,7 @@
 - [x] Limit simultaneous enemies and stagger spawns so groups cannot flood the screen at once.
 - [x] Boss levels (10/15/20 per 20-level cycle) show red pulsing skull icon + BOSS tag on the level map.
 - [x] Settings → About now has Privacy Policy and Terms & Conditions popups written for Astravolt.
+- [x] Remove difficulty selector from Settings (Normal gameplay used).
+- [x] Flip ship-shaped enemy sprites 180° to face the player (beam sprites untouched).
+- [x] Locked boss levels show faded skull + BOSS tag instead of a lock icon.
+- [x] Verified both changes in the live preview (level map screenshot, boss level 10).
