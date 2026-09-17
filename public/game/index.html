@@ -8437,18 +8437,18 @@ slowTime>0
 
 if(shootTick%rate===0){
 
-let bw=hasDamage?6:4;
-let bh=hasDamage?16:12;
+let bw=(hasDamage||gunPurple())?6:4;
+let bh=(hasDamage||gunPurple())?16:12;
 
 playShoot();
 
 let col=
 slowTime>0
 ?"#a855f7"
-:(hasDamage?"#ff0055":"#00f2fe");
+:(gunPurple()?"#c026ff":(hasDamage?"#ff0055":"#00f2fe"));
 
 
-if(hasDouble){
+if(hasDouble||gunDoubleShot()){
 
 bullets.push({
 x:player.x+4,
