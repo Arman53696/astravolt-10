@@ -7406,6 +7406,8 @@ if(label) label.innerText="REVIVE · WATCH AD (FREE)";
 
 function adRevive(){
 
+if(adsRemoved) return;
+
 if(adReviveUsed>=MAX_AD_REVIVES) return;
 
 let btn=document.getElementById("adReviveBtn");
@@ -7431,6 +7433,8 @@ grantRevive();
 /* ---- double the credits earned this level by watching an ad ---- */
 
 function adDoubleCoins(){
+
+if(adsRemoved) return;
 
 if(adDoubleUsed) return;
 
@@ -7572,7 +7576,7 @@ let lbl=document.getElementById("adDoubleCoinLabel");
 if(lbl) lbl.innerText="DOUBLE CREDITS ("+runCoins+") — WATCH AD";
 dbl.disabled=false;
 dbl.style.opacity="1";
-dbl.style.display=runCoins>0?"block":"none";
+dbl.style.display=(runCoins>0 && !adsRemoved)?"block":"none";
 }
 
 levelsSinceAd++;
