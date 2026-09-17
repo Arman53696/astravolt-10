@@ -5861,16 +5861,28 @@ purchaseToken=paymentResponse.details.purchaseToken;
 
 await paymentResponse.complete("success");
 
+if(isRemoveAds){
+
+/* non-consumable: never consumed, so Play keeps it owned and it
+   restores automatically on reinstall / new device */
+adsRemoved=true;
+
+}else{
+
 /* consumable coin pack: acknowledge + consume so it can be bought again */
 await digitalGoodsService.consume(purchaseToken);
 
 coins+=coinsAmount;
+
+}
 
 saveData();
 
 syncCoinDisplays();
 
 playPowerUp();
+
+if(isRemoveAds) showToast("Ads removed — enjoy the game!","#10b981");
 
 if(btnEl){
 
