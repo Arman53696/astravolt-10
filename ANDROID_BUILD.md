@@ -1,6 +1,6 @@
-# Galaxy Defender — Android (Capacitor) build guide
+# Astravolt — Android (Capacitor) build guide
 
-App ID: `app.nexora.galaxydefender` · App name: **Galaxy Defender**
+App ID: `app.nexora.astravolt` · App name: **Astravolt**
 
 ## What is set up
 - `public/game/index.html` — the full game (bundled offline into the APK).
@@ -37,7 +37,7 @@ Sign the release build (Android Studio → Build → Generate Signed Bundle) or
 add a `signingConfig` in `android/app/build.gradle` with your keystore.
 
 ## Google Play Console setup (required for purchases)
-1. Create the app with package name `app.nexora.galaxydefender` and upload a
+1. Create the app with package name `app.nexora.astravolt` and upload a
    signed AAB to internal testing at least once.
 2. Monetize → Products → In-app products: create **managed (consumable)**
    products with exactly these IDs and set your prices:
