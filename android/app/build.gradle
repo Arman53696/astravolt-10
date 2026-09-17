@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "app.nexora.galaxydefender"
+    namespace = "app.nexora.astravolt"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.nexora.galaxydefender"
+        applicationId "app.nexora.astravolt"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

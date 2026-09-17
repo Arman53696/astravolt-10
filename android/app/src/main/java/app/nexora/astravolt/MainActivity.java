@@ -1,4 +1,4 @@
-package app.nexora.cyberdefender;
+package app.nexora.astravolt;
 
 import com.getcapacitor.BridgeActivity;
 

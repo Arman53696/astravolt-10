@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "app.nexora.galaxydefender",
+  appId: "app.nexora.astravolt",
   appName: "Astravolt",
   // The game is a single self-contained HTML file bundled into the APK,
   // so the app works fully offline.
