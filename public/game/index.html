@@ -4188,12 +4188,26 @@ return;
 }
 
 let restoredCoins=0;
+let restoredNoAds=false;
 
 for(let purchase of purchases){
 
 let pack=packs.find(p=>p.sku===purchase.itemId);
 
 if(!pack) continue;
+
+if(pack.removeAds){
+
+/* non-consumable stays owned on Play — just re-flag it */
+adsRemoved=true;
+
+restoredNoAds=true;
+
+saveData();
+
+continue;
+
+}
 
 /* isolate each token so one failed consume can't stop the
    rest of a batch of pending purchases from being restored */
@@ -4207,7 +4221,7 @@ restoredCoins+=pack.coins;
 
 }
 
-if(restoredCoins>0){
+if(restoredCoins>0 || restoredNoAds){
 
 coins+=restoredCoins;
 
@@ -4215,7 +4229,9 @@ saveData();
 
 syncCoinDisplays();
 
-showToast("Restored "+restoredCoins+" coins from a pending purchase","#10b981");
+renderShop();
+
+showToast(restoredNoAds ? "No Ads pack restored — ads are off" : "Restored "+restoredCoins+" coins from a pending purchase","#10b981");
 
 }else{
 
