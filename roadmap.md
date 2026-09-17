@@ -1,0 +1,19 @@
+- [x] Remove the bottom “DEFEND THE STARS” panel.
+- [x] Use the supplied reference styling for the five home-menu icons.
+- [x] Reduce the home-menu game icon sizes.
+- [x] Make the Astravolt logo 1.5× smaller.
+- [x] Restore visible menu symbols and give tiles rounded blue corner detailing.
+- [x] Update the store to the new 26 coin packs (450–90,900 credits).
+- [x] Verify coin packs render in the live store (26 packs, first/last/BEST VALUE confirmed).
+- [x] All upgrades max level 5; Rapid Fire LV5 gives permanent double firing.
+- [x] Reference-style neon hexagon upgrade icons; in-game pickup messages shown as floating game text.
+- [x] In-game power-ups drawn as glossy 3D spinning hex capsules with their icons; drop rate reduced (~2.5x rarer, bomb 3x rarer).
+- [x] Enlarge the player ship and replace skill timer bars with reference-style neon circular cooldown icons.
+- [x] Removed top-corner HUD bar (pause/hearts/score/coins/settings) — user will send icons to re-add.
+- [x] Level/wave system: waves per level (2,3,3,4,5,5,6,6,7,7, then 8+), boss ends each level, endless progression.
+- [x] In-game header restored, level select screen, 5 skills only (shield/health/speed/fire/coin), 100 HP player, upgrade caps, 2x prices, purple orb removed.
+- [x] Boss overhaul: much higher HP, multi-segment health bars (purple/pink/blue/green/red by level), bar at top-middle, distinct attack patterns per boss.
+- [x] Increase player firing damage slightly; make enemies enter in spaced formations, cross and exit like Wings Fighter; reduce player health HUD size; preload all ship/enemy/power-up sprites as default textures.
+- [x] Limit simultaneous enemies and stagger spawns so groups cannot flood the screen at once.
+- [x] Boss levels (10/15/20 per 20-level cycle) show red pulsing skull icon + BOSS tag on the level map.
+- [x] Settings → About now has Privacy Policy and Terms & Conditions popups written for Astravolt.
