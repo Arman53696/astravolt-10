@@ -12,12 +12,14 @@
 ========================================================= */
 
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  // e.g. "https://your-project-default-rtdb.firebaseio.com"
-  databaseURL: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyC27VYWmmze2ZldxNjUgbq0oRsEp1ZQWVc",
+  authDomain: "astra-volt.firebaseapp.com",
+  projectId: "astra-volt",
+  // Realtime Database REST endpoint — adjust region suffix if your RTDB
+  // was created outside the US (e.g. ...-default-rtdb.asia-southeast1.firebasedatabase.app)
+  databaseURL: "https://astra-volt-default-rtdb.firebaseio.com",
+  storageBucket: "astra-volt.firebasestorage.app",
+  messagingSenderId: "937350126568",
+  appId: "1:937350126568:web:de01d36be7395012d7e25d",
+  measurementId: "G-WQCPBKR2GK",
 };
