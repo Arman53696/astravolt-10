@@ -6660,7 +6660,7 @@ let skullSvg='<svg class="boss-ic" viewBox="0 0 24 24" fill="currentColor"><path
 if(isBoss){
 node.style.flexDirection="column";
 node.style.gap="0";
-node.innerHTML=(unlocked?skullSvg+'<span class="lvl-lock-num" style="margin-top:-3px">'+i+'</span>':lockSvg+'<span class="lvl-lock-num">'+i+'</span>')+'<span class="boss-tag">BOSS</span>';
+node.innerHTML=(unlocked?skullSvg+'<span class="lvl-lock-num" style="margin-top:-3px">'+i+'</span>':(isBoss?skullSvg+'<span class="lvl-lock-num">'+i+'</span>':lockSvg+'<span class="lvl-lock-num">'+i+'</span>'))+'<span class="boss-tag">BOSS</span>';
 }else{
 node.innerHTML=(unlocked?i:lockSvg+'<span class="lvl-lock-num">'+i+"</span>");
 }
