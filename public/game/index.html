@@ -4346,7 +4346,7 @@ let initial=userName.charAt(0);
 chip.classList.add("show");
 
 chip.innerHTML=`
-<div class="profile-chip-avatar" style="background:${userColor}">${initial}</div>
+<div class="profile-chip-avatar" style="background:linear-gradient(150deg,${userColor},#0b1c3a)">${initial}</div>
 <div class="profile-chip-name">${userName}</div>
 `;
 
@@ -4359,8 +4359,8 @@ accountRow.dataset.avail="1";accountRow.style.display="flex";
 chip.classList.add("show");
 
 chip.innerHTML=`
-<div class="profile-chip-avatar" style="background:#64748b">G</div>
-<div class="profile-chip-name">Guest Player</div>
+<div class="profile-chip-avatar" style="background:linear-gradient(150deg,#2dc5ff,#0b2a5a)"><svg class="ic"><use href="#i-user"/></svg></div>
+<div class="profile-chip-name">Guest</div>
 `;
 
 desc.innerText="Playing as guest (not signed in)";
@@ -4376,6 +4376,46 @@ chip.innerHTML="";
 accountRow.dataset.avail="0";accountRow.style.display="none";
 
 }
+
+}
+
+
+function openAccountMenu(){
+
+let m=document.getElementById("accountMenuModal");
+if(!m) return;
+
+let av=document.getElementById("acctMenuAvatar");
+let nm=document.getElementById("acctMenuName");
+let sb=document.getElementById("acctMenuSub");
+let inBtn=document.getElementById("acctMenuSignIn");
+let outBtn=document.getElementById("acctMenuSignOut");
+
+if(isLoggedIn && userName){
+av.style.background=`linear-gradient(150deg,${userColor},#0b1c3a)`;
+av.innerHTML=userName.charAt(0).toUpperCase();
+nm.innerText=userName;
+sb.innerText=userEmail||"Signed in";
+inBtn.style.display="none";
+outBtn.style.display="block";
+}else{
+av.style.background="linear-gradient(150deg,#2dc5ff,#0b2a5a)";
+av.innerHTML='<svg class="ic"><use href="#i-user"/></svg>';
+nm.innerText="Guest Player";
+sb.innerText="Not signed in — progress saved on this device";
+inBtn.style.display="block";
+outBtn.style.display="none";
+}
+
+m.style.display="flex";
+
+}
+
+
+function closeAccountMenu(){
+
+let m=document.getElementById("accountMenuModal");
+if(m) m.style.display="none";
 
 }
 
