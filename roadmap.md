@@ -22,3 +22,4 @@
 - [x] Locked boss levels show faded skull + BOSS tag instead of a lock icon.
 - [x] Verified both changes in the live preview (level map screenshot, boss level 10).
 - [x] Keep every home-screen option visible inside the usable mobile viewport.
+- [x] Refresh cached browser game pages while retaining offline fallback.
