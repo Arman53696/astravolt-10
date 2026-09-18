@@ -89,6 +89,12 @@ window.CloudSave = (function () {
     if (!userKey) setUser(null);
     var body = pending;
     pending = null;
+    /* offline right now? keep the snapshot and wait for the network */
+    if (navigator.onLine === false) {
+      pending = body;
+      setStatus("local");
+      return;
+    }
     try {
       setStatus("syncing");
       var res = await fetch(url(), {
@@ -99,6 +105,9 @@ window.CloudSave = (function () {
       if (!res.ok) throw new Error("http " + res.status);
       setStatus("online");
     } catch (e) {
+      /* failed (no network / server hiccup): retry automatically when
+         the connection comes back so nothing is ever lost */
+      pending = body;
       setStatus("error");
     }
   }
@@ -109,6 +118,12 @@ window.CloudSave = (function () {
     clearTimeout(timer);
     timer = setTimeout(flush, 900);
   }
+
+  /* retry as soon as the device is back online */
+  window.addEventListener("online", function () {
+    if (pending) flush();
+    else setStatus("online");
+  });
 
   /* best-effort final write when the app goes to background / closes */
   document.addEventListener("visibilitychange", function () {
