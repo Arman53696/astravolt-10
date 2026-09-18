@@ -6604,6 +6604,7 @@ ctx.restore();
 }
 
 /* ---- reference ship artwork (one sprite per skin) ---- */
+window.__astraPreload=window.__astraPreload||[];
 const SHIP_SPRITES={};
 ["nova","inferno","valkyr","shadow","void","orion"].forEach(function(id){
 let img=new Image();
@@ -6614,6 +6615,7 @@ if(g && g.style.display!=="none"){ try{ renderSkins(); }catch(e){} }
 img.decoding="async";
 img.src="ships/"+id+".png";
 SHIP_SPRITES[id]=img;
+window.__astraPreload.push(img);
 });
 
 
@@ -6626,6 +6628,7 @@ const BG_TEXTURES={};
  im.decoding="async";
  im.src=src;
  BG_TEXTURES[src]=im;
+ window.__astraPreload.push(im);
 });
 
 
