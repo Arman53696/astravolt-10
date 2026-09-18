@@ -2607,18 +2607,18 @@ canvas{
 
 <body>
 
-<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#020617 url('loading-bg.webp') center/cover no-repeat;font-family:inherit;color:#eef8ff;overflow:hidden">
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(1,4,18,.02),rgba(1,4,18,.12) 52%,rgba(1,4,18,.62) 100%)"></div>
-  <div style="position:relative;width:min(92vw,560px);max-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
-    <img src="ships/nova.png" alt="" style="width:min(32vw,160px);height:auto;filter:drop-shadow(0 0 14px #22d3ee) drop-shadow(0 18px 22px rgba(0,94,255,.75));margin-bottom:-6px;flex-shrink:0">
-    <img src="loading-logo.webp" alt="Astravolt" style="display:block;width:min(58vw,300px);max-width:100%;max-height:28vh;height:auto;object-fit:contain;margin:0 auto;filter:drop-shadow(0 0 18px rgba(34,211,238,.8));margin-bottom:clamp(24px,4vh,40px);flex-shrink:0">
-    <div style="width:min(78vw,430px);padding:5px;border:3px solid #a7dbff;clip-path:polygon(5% 0,95% 0,100% 30%,100% 70%,95% 100%,5% 100%,0 70%,0 30%);background:#071532;box-shadow:0 0 0 3px #1268d4,0 0 22px #00bfff">
+<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#020617 url('loading-bg.webp') center/cover no-repeat;font-family:inherit;color:#eef8ff;overflow:hidden;padding:max(12px,env(safe-area-inset-top)) 0 max(12px,env(safe-area-inset-bottom))">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(1,4,18,.01),rgba(1,4,18,.08) 50%,rgba(1,4,18,.56) 100%)"></div>
+  <div style="position:relative;width:min(92vw,560px);height:100%;max-height:760px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <img src="ships/nova.png" alt="" style="width:min(29vw,145px);max-height:19vh;height:auto;object-fit:contain;filter:drop-shadow(0 0 14px #22d3ee) drop-shadow(0 18px 22px rgba(0,94,255,.75));margin-bottom:clamp(2px,1vh,8px);flex-shrink:1">
+    <img src="loading-logo.webp" alt="Astravolt" style="display:block;width:min(76vw,430px);max-width:100%;max-height:18vh;height:auto;object-fit:contain;margin:0 auto clamp(28px,5vh,48px);filter:drop-shadow(0 0 18px rgba(34,211,238,.8));flex-shrink:1">
+    <div style="width:min(78vw,430px);padding:5px;border:3px solid #a7dbff;clip-path:polygon(5% 0,95% 0,100% 30%,100% 70%,95% 100%,5% 100%,0 70%,0 30%);background:#071532;box-shadow:0 0 0 3px #1268d4,0 0 22px #00bfff;flex-shrink:0">
       <div style="height:19px;padding:3px;background:#020b24;clip-path:inherit;overflow:hidden">
         <div id="bootBar" style="height:100%;width:0%;background:repeating-linear-gradient(120deg,#00aee9 0 25px,#25e9ff 26px 48px);box-shadow:0 0 15px #24e5ff;transition:width .18s ease"></div>
       </div>
     </div>
-    <div id="bootPct" style="margin:8px 0 23px;font-size:24px;font-weight:900;text-shadow:0 0 10px #168dff">0%</div>
-    <div id="bootTip" style="width:min(66vw,350px);min-height:66px;display:flex;align-items:center;padding:10px 18px;border:2px solid #20b7ff;clip-path:polygon(8% 0,92% 0,100% 28%,100% 72%,92% 100%,8% 100%,0 72%,0 28%);background:rgba(2,12,42,.92);box-shadow:0 0 15px rgba(0,187,255,.7);font-size:12px;line-height:1.45"><span style="font-size:29px;margin-right:14px">💡</span><span><b style="color:#24e8f2">TIP:</b><br>Upgrade your ship to survive stronger enemies!</span></div>
+    <div id="bootPct" style="margin:10px 0 clamp(22px,4vh,34px);font-size:clamp(25px,7vw,38px);font-weight:900;text-shadow:0 0 10px #168dff;flex-shrink:0">0%</div>
+    <div id="bootTip" style="width:min(70vw,370px);min-height:78px;display:flex;align-items:center;padding:12px 20px;border-top:2px solid #20b7ff;border-bottom:2px solid #20b7ff;background:rgba(2,12,42,.88);box-shadow:0 0 15px rgba(0,187,255,.45);font-size:clamp(11px,3.2vw,14px);line-height:1.5;flex-shrink:0"><span style="font-size:30px;margin-right:16px">💡</span><span><b style="color:#24e8f2">TIP:</b><br>Upgrade your ship to survive stronger enemies!</span></div>
   </div>
 </div>
 
