@@ -8,8 +8,20 @@ apply plugin: 'com.android.application'
 //   keyPassword=YOUR_KEY_PASSWORD
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file("keystore.properties")
+def hasReleaseKeystore = false
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    def storeFileName = keystoreProperties['storeFile']
+    if (storeFileName) {
+        def ksFile = rootProject.file(storeFileName)
+        // Only use the release signing config when the .jks really exists
+        // and the placeholder passwords have been replaced.
+        hasReleaseKeystore = ksFile.exists() &&
+            keystoreProperties['storePassword'] != null &&
+            keystoreProperties['storePassword'] != 'CHANGE_ME' &&
+            keystoreProperties['keyPassword'] != null &&
+            keystoreProperties['keyPassword'] != 'CHANGE_ME'
+    }
 }
 
 android {
