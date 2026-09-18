@@ -10390,5 +10390,60 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script>
 <!-- 3D overlay disabled: reference ship/boss sprites are used instead -->
 
+<script>
+/* Boot loading screen: shows for at least 4s, longer if artwork is still
+   decoding, so backgrounds and sprites are ready before the game appears. */
+(function(){
+ var el=document.getElementById("bootLoader");
+ if(!el) return;
+ var bar=document.getElementById("bootBar"), pct=document.getElementById("bootPct"),
+     tipEl=document.getElementById("bootTip");
+ var MIN=4000, MAX=20000, start=Date.now(), shown=0, done=false;
+
+ var tips=[
+  "Upgrade your ship to survive stronger enemies!",
+  "Collect coins to unlock new ships and skins.",
+  "Ship Gun level 3 gives you a double shot.",
+  "Shields absorb one hit — grab them when you can.",
+  "Boss levels are marked in red on the map."
+ ];
+ var ti=0;
+ var tipTimer=setInterval(function(){
+  ti=(ti+1)%tips.length;
+  if(tipEl) tipEl.innerHTML='<b style="color:#5ee2ff">TIP:</b> '+tips[ti];
+ },2600);
+
+ function assetProgress(){
+  var list=window.__astraPreload||[];
+  if(!list.length) return document.readyState==="complete"?1:0.5;
+  var ready=0;
+  for(var i=0;i<list.length;i++){ if(list[i].complete) ready++; }
+  var p=ready/list.length;
+  if(document.readyState!=="complete") p=Math.min(p,0.95);
+  return p;
+ }
+
+ function finish(){
+  if(done) return; done=true;
+  clearInterval(tipTimer); clearInterval(tick);
+  if(bar) bar.style.width="100%";
+  if(pct) pct.textContent="100%";
+  el.style.transition="opacity .45s ease";
+  el.style.opacity="0";
+  setTimeout(function(){ el.remove(); },500);
+ }
+
+ var tick=setInterval(function(){
+  var t=Date.now()-start;
+  var target=Math.min(t/MIN,1)*0.5 + assetProgress()*0.5;
+  shown=Math.max(shown,Math.min(target,0.99));
+  if(bar) bar.style.width=(shown*100).toFixed(0)+"%";
+  if(pct) pct.textContent=Math.round(shown*100)+"%";
+  if((t>=MIN && assetProgress()>=1) || t>=MAX) finish();
+ },120);
+})();
+</script>
+
+
 </body>
 </html>
