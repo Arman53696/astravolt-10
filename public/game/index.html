@@ -8007,6 +8007,43 @@ togglePause();
 
 });
 
+
+/* UNIFIED BACK HANDLER — Escape key on desktop, hardware back on Android.
+   Closes the top-most open screen instead of letting the app quit. */
+function isShown(id){
+  const el=document.getElementById(id);
+  return !!el && getComputedStyle(el).display!=="none";
+}
+
+function handleBackAction(){
+
+  if(isShown("ppModal")){ closeLegal("pp"); return true; }
+  if(isShown("tcModal")){ closeLegal("tc"); return true; }
+  if(isShown("gpickerModal")){ closeAccountPicker(); return true; }
+  if(isShown("accountMenuModal")){ closeAccountMenu(); return true; }
+  if(isShown("resetConfirmModal")){ closeResetConfirm(); return true; }
+  if(isShown("noCoinModal")){ closeNoCoin(); return true; }
+  if(isShown("settingsSheet")){ closeSettings(); return true; }
+  if(isShown("shopSheet")){ closeShop(); return true; }
+  if(isShown("levelModal")){ closeLevelSelect(); return true; }
+  if(typeof isPlaying!=="undefined" && isPlaying && !isPaused){ togglePause(); return true; }
+  return false;
+
+}
+
+window.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ if(handleBackAction()) e.preventDefault(); }
+});
+
+/* Android hardware / gesture back inside the native app */
+(function(){
+  const App=window.Capacitor?.Plugins?.App;
+  if(!App||!App.addListener) return;
+  App.addListener("backButton",()=>{
+    if(!handleBackAction()) App.minimizeApp?.();
+  });
+})();
+
 window.addEventListener("keyup",e=>{
 
 keysDown[e.key.toLowerCase()]=false;
