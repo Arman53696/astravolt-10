@@ -5474,9 +5474,11 @@ function spawnBoss(lvl){
    much longer, faster fights */
 let cap=Math.min(lvl,20);
 let barCount=bossBarCount(lvl);
-/* first boss = 2000 hp, every next boss is twice as powerful */
+/* first boss (level 10) = 1000 hp; every next boss doubles, and each
+   level past the first boss makes the fight meaningfully harder */
 let bIdx=bossIndexForLevel(lvl);
-let hp=Math.round(2000*Math.pow(2,bIdx));
+let lvlScale=1+Math.max(0,lvl-10)*0.12;
+let hp=Math.round(1000*Math.pow(2,bIdx)*lvlScale);
 let barHp=Math.round(hp/barCount);
 hp=barHp*barCount;
 let r=46+cap*2.6;
