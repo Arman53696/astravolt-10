@@ -3830,6 +3830,10 @@ try{ renderUpgrades(); renderSkins(); }catch(e){}
 }
 
 
+document.addEventListener("DOMContentLoaded",function(){
+setTimeout(function(){ try{ applyDevAccountPerks(); }catch(e){} },400);
+});
+
 function updateSyncUI(state){
 
 let dot=document.getElementById("syncDot");
