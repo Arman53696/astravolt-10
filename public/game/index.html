@@ -5281,8 +5281,135 @@ engineNodes.gain.gain.setTargetAtTime(soundOn?0.022*soundVolume:0.0001,audioCtx.
 }
 
 
-/* only play music during ACTIVE, unpaused gameplay -
-   off on home / settings / shop / pause / game over */
+/* =========================
+   MENU MUSIC
+   (calm dreamy theme for home / level map /
+   settings / shop - everything except gameplay)
+========================= */
+
+let menuMusicStarted=false;
+let menuPadNodes=[];
+let menuPadOscs=[];
+let menuChordTimer=null;
+let menuArpTimer=null;
+let menuChordStep=0;
+
+/* soft major-7 chords: Cmaj7 / Am7 / Fmaj7 / G6 */
+const MENU_CHORDS=[
+[130.81,164.81,196.00,246.94],
+[110.00,130.81,164.81,196.00],
+[87.31,110.00,130.81,164.81],
+[98.00,123.47,146.83,196.00]
+];
+const MENU_ARP=[523.25,587.33,659.25,783.99,880.00,783.99,659.25,587.33];
+
+function playMenuChord(chord){
+
+if(!soundOn || !menuMusicStarted) return;
+
+try{
+
+let ac=getAudioCtx();
+
+chord.forEach((freq,i)=>{
+
+let osc=ac.createOscillator();
+let gain=ac.createGain();
+
+osc.type="sine";
+osc.frequency.value=freq;
+
+gain.gain.setValueAtTime(0.0001,ac.currentTime);
+gain.gain.linearRampToValueAtTime(0.016*musicVolume,ac.currentTime+0.9);
+gain.gain.setTargetAtTime(0.0001,ac.currentTime+2.6,0.9);
+
+osc.connect(gain);
+gain.connect(ac.destination);
+
+osc.start();
+osc.stop(ac.currentTime+5);
+
+});
+
+}catch(e){}
+
+}
+
+function playMenuArpNote(freq){
+
+if(!soundOn || !menuMusicStarted) return;
+
+try{
+
+let ac=getAudioCtx();
+let osc=ac.createOscillator();
+let gain=ac.createGain();
+
+osc.type="triangle";
+osc.frequency.value=freq;
+
+gain.gain.setValueAtTime(0.0001,ac.currentTime);
+gain.gain.linearRampToValueAtTime(0.02*musicVolume,ac.currentTime+0.06);
+gain.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+1.1);
+
+osc.connect(gain);
+gain.connect(ac.destination);
+
+osc.start();
+osc.stop(ac.currentTime+1.2);
+
+}catch(e){}
+
+}
+
+function scheduleMenuChord(){
+
+if(!menuMusicStarted) return;
+
+playMenuChord(MENU_CHORDS[menuChordStep%MENU_CHORDS.length]);
+menuChordStep++;
+
+menuChordTimer=setTimeout(scheduleMenuChord,4000);
+
+}
+
+function scheduleMenuArp(){
+
+if(!menuMusicStarted) return;
+
+/* sparse gentle arpeggio - skip some steps randomly */
+if(Math.random()<0.7){
+playMenuArpNote(MENU_ARP[Math.floor(Math.random()*MENU_ARP.length)]);
+}
+
+menuArpTimer=setTimeout(scheduleMenuArp,900);
+
+}
+
+function startMenuMusic(){
+
+if(menuMusicStarted) return;
+
+menuMusicStarted=true;
+
+scheduleMenuChord();
+scheduleMenuArp();
+
+}
+
+function stopMenuMusic(){
+
+if(!menuMusicStarted) return;
+
+menuMusicStarted=false;
+
+clearTimeout(menuChordTimer);
+clearTimeout(menuArpTimer);
+
+}
+
+/* gameplay music during ACTIVE, unpaused gameplay;
+   menu theme everywhere else (home / settings / shop / map) */
 function syncBackgroundMusic(){
 
 let settingsOpen=document.getElementById("settingsSheet").style.display==="flex";
@@ -5292,6 +5419,7 @@ let shouldPlay=isPlaying && !isPaused && !settingsOpen && !shopOpen;
 
 if(shouldPlay){
 
+stopMenuMusic();
 startBackgroundMusic();
 startEngineSound();
 
@@ -5299,6 +5427,7 @@ startEngineSound();
 
 stopBackgroundMusic();
 stopEngineSound();
+startMenuMusic();
 
 }
 
