@@ -99,8 +99,14 @@ function resize(w,h){
   renderer.setPixelRatio(dpr); renderer.setSize(w,h,false);
   camera.left=-w/2; camera.right=w/2; camera.top=h/2; camera.bottom=-h/2; camera.near=.1; camera.far=1000; camera.updateProjectionMatrix();
 }
-resize(innerWidth,innerHeight);
-addEventListener('resize',()=>resize(innerWidth,innerHeight),{passive:true});
+function viewportSize(){
+  const viewport=window.visualViewport;
+  return {w:Math.round(viewport?.width||innerWidth),h:Math.round(viewport?.height||innerHeight)};
+}
+function resizeToViewport(){ const {w,h}=viewportSize(); resize(w,h); }
+resizeToViewport();
+addEventListener('resize',resizeToViewport,{passive:true});
+window.visualViewport?.addEventListener('resize',resizeToViewport,{passive:true});
 
 new GLTFLoader().load('./models/player-ship.glb', gltf=>{
   ship=gltf.scene;
