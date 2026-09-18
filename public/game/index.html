@@ -3672,28 +3672,57 @@ clearInterval(waitForGsi);
 const canvas=document.getElementById("gameCanvas");
 const ctx=canvas.getContext("2d");
 
-let W=window.innerWidth;
-let H=window.innerHeight;
+function getAppViewport(){
+
+const viewport=window.visualViewport;
+
+return {
+width:Math.max(1,Math.round(viewport?viewport.width:window.innerWidth)),
+height:Math.max(1,Math.round(viewport?viewport.height:window.innerHeight))
+};
+
+}
+
+function syncAppHeight(){
+
+const size=getAppViewport();
+
+document.documentElement.style.setProperty("--app-height",size.height+"px");
+
+return size;
+
+}
+
+let initialViewport=syncAppHeight();
+let W=initialViewport.width;
+let H=initialViewport.height;
 
 canvas.width=W;
 canvas.height=H;
 
 
-window.addEventListener("resize",()=>{
+function resizeGameViewport(){
 
-W=window.innerWidth;
-H=window.innerHeight;
+let size=syncAppHeight();
+W=size.width;
+H=size.height;
 
 canvas.width=W;
 canvas.height=H;
 
-player.x=W/2-player.w/2;
-player.y=H-player.h-48;
+if(typeof player!=="undefined"&&player){
+player.x=Math.min(Math.max(0,player.x),Math.max(0,W-player.w));
+player.y=Math.min(Math.max(58,player.y),Math.max(58,H-player.h-16));
 
 targetX=player.x;
 targetY=player.y;
+}
 
-});
+}
+
+window.addEventListener("resize",resizeGameViewport,{passive:true});
+window.addEventListener("orientationchange",()=>setTimeout(resizeGameViewport,120),{passive:true});
+if(window.visualViewport) window.visualViewport.addEventListener("resize",resizeGameViewport,{passive:true});
 
 
 /* =========================
