@@ -8063,6 +8063,7 @@ function isShown(id){
 
 function handleBackAction(){
 
+  if(isShown("quitConfirmModal")){ closeQuitConfirm(); return true; }
   if(isShown("ppModal")){ closeLegal("pp"); return true; }
   if(isShown("tcModal")){ closeLegal("tc"); return true; }
   if(isShown("accountPickerModal")){ closeAccountPicker(); return true; }
