@@ -73,7 +73,12 @@ window.CloudSave = (function () {
     if (!userKey) setUser(null);
     try {
       setStatus("syncing");
-      var res = await fetch(url(), { cache: "no-store" });
+      /* offline devices can hang a fetch for a long time — cap it so the
+         game never stalls on the loading screen waiting for the cloud */
+      var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      var to = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 4000) : null;
+      var res = await fetch(url(), { cache: "no-store", signal: ctrl ? ctrl.signal : undefined });
+      if (to) clearTimeout(to);
       if (!res.ok) throw new Error("http " + res.status);
       var data = await res.json();
       setStatus("online");
