@@ -3475,7 +3475,17 @@ function setSettingsTab(tab){
      In a normal browser this 404s silently and is ignored, but inside the
      APK it is what loads cordova-plugin-purchase (window.CdvPurchase),
      which the native Google Play Billing bridge at the bottom waits for. -->
-<script src="cordova.js"></script>
+<script>
+/* load the bridge only inside the native shell so plain browsers don't
+   fire a 404 request on every start */
+(function(){
+  var native = !!(window.Capacitor || window.cordova) || location.protocol==='capacitor:';
+  if(!native) return;
+  var s=document.createElement('script');
+  s.src='cordova.js'; s.async=false; s.onerror=function(){};
+  document.head.appendChild(s);
+})();
+</script>
 <script src="firebase-config.js"></script>
 <script src="cloud-save.js"></script>
 <script src="ads.js"></script>
