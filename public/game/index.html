@@ -7952,7 +7952,17 @@ startMatch(level||startLevelChoice);
 }
 
 
-function quitMatch(){
+function showQuitConfirm(){
+  document.getElementById("quitConfirmModal").style.display="flex";
+}
+
+function closeQuitConfirm(){
+  document.getElementById("quitConfirmModal").style.display="none";
+}
+
+function confirmQuit(){
+
+closeQuitConfirm();
 
 isPlaying=false;
 isPaused=false;
@@ -7960,6 +7970,12 @@ isPaused=false;
 document.getElementById("pauseModal").style.display="none";
 
 goHome();
+
+}
+
+function quitMatch(){
+
+showQuitConfirm();
 
 }
 
