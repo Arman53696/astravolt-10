@@ -3119,6 +3119,36 @@ QUIT MATCH
 </div>
 
 
+<!-- QUIT CONFIRMATION -->
+
+<div id="quitConfirmModal" class="modal-screen" style="display:none;z-index:2600;">
+
+<div class="card">
+
+<div class="modal-icon red"><svg class="ic"><use href="#i-alert"/></svg></div>
+
+<h3 style="color:#ef4444;letter-spacing:1px;">
+QUIT MATCH?
+</h3>
+
+<p style="color:#cbd5e1;font-size:13px;margin:10px 0">
+Progress in this run will be lost. Are you sure?
+</p>
+
+<button class="action-btn"
+style="background:#ef4444;color:#fff"
+onclick="confirmQuit()">
+<span class="btn-row"><svg class="ic"><use href="#i-logout"/></svg> YES, QUIT</span>
+</button>
+
+<button class="action-btn ghost-btn" onclick="closeQuitConfirm()">
+CANCEL
+</button>
+
+</div>
+</div>
+
+
 <canvas id="gameCanvas"></canvas>
 
 <div id="levelUpBanner">
@@ -7922,7 +7952,17 @@ startMatch(level||startLevelChoice);
 }
 
 
-function quitMatch(){
+function showQuitConfirm(){
+  document.getElementById("quitConfirmModal").style.display="flex";
+}
+
+function closeQuitConfirm(){
+  document.getElementById("quitConfirmModal").style.display="none";
+}
+
+function confirmQuit(){
+
+closeQuitConfirm();
 
 isPlaying=false;
 isPaused=false;
@@ -7930,6 +7970,12 @@ isPaused=false;
 document.getElementById("pauseModal").style.display="none";
 
 goHome();
+
+}
+
+function quitMatch(){
+
+showQuitConfirm();
 
 }
 
@@ -8017,6 +8063,7 @@ function isShown(id){
 
 function handleBackAction(){
 
+  if(isShown("quitConfirmModal")){ closeQuitConfirm(); return true; }
   if(isShown("ppModal")){ closeLegal("pp"); return true; }
   if(isShown("tcModal")){ closeLegal("tc"); return true; }
   if(isShown("accountPickerModal")){ closeAccountPicker(); return true; }
