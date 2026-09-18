@@ -3475,7 +3475,17 @@ function setSettingsTab(tab){
      In a normal browser this 404s silently and is ignored, but inside the
      APK it is what loads cordova-plugin-purchase (window.CdvPurchase),
      which the native Google Play Billing bridge at the bottom waits for. -->
-<script src="cordova.js"></script>
+<script>
+/* load the bridge only inside the native shell so plain browsers don't
+   fire a 404 request on every start */
+(function(){
+  var native = !!(window.Capacitor || window.cordova) || location.protocol==='capacitor:';
+  if(!native) return;
+  var s=document.createElement('script');
+  s.src='cordova.js'; s.async=false; s.onerror=function(){};
+  document.head.appendChild(s);
+})();
+</script>
 <script src="firebase-config.js"></script>
 <script src="cloud-save.js"></script>
 <script src="ads.js"></script>
@@ -7997,6 +8007,43 @@ togglePause();
 
 });
 
+
+/* UNIFIED BACK HANDLER — Escape key on desktop, hardware back on Android.
+   Closes the top-most open screen instead of letting the app quit. */
+function isShown(id){
+  const el=document.getElementById(id);
+  return !!el && getComputedStyle(el).display!=="none";
+}
+
+function handleBackAction(){
+
+  if(isShown("ppModal")){ closeLegal("pp"); return true; }
+  if(isShown("tcModal")){ closeLegal("tc"); return true; }
+  if(isShown("accountPickerModal")){ closeAccountPicker(); return true; }
+  if(isShown("accountMenuModal")){ closeAccountMenu(); return true; }
+  if(isShown("resetConfirmModal")){ closeResetConfirm(); return true; }
+  if(isShown("noCoinModal")){ closeNoCoin(); return true; }
+  if(isShown("settingsSheet")){ closeSettings(); return true; }
+  if(isShown("shopSheet")){ closeShop(); return true; }
+  if(isShown("levelModal")){ closeLevelSelect(); return true; }
+  if(typeof isPlaying!=="undefined" && isPlaying && !isPaused){ togglePause(); return true; }
+  return false;
+
+}
+
+window.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ if(handleBackAction()) e.preventDefault(); }
+});
+
+/* Android hardware / gesture back inside the native app */
+(function(){
+  const App=window.Capacitor?.Plugins?.App;
+  if(!App||!App.addListener) return;
+  App.addListener("backButton",()=>{
+    if(!handleBackAction()) App.minimizeApp?.();
+  });
+})();
+
 window.addEventListener("keyup",e=>{
 
 keysDown[e.key.toLowerCase()]=false;
@@ -10346,6 +10393,10 @@ stepAccumulator+=elapsed;
    even when the device throttles rendering to 30fps while idle */
 let steps=0;
 
+/* one bad frame must never kill the animation loop — otherwise the
+   game would look frozen ("crashed") on the device */
+try{
+
 while(stepAccumulator>=LOGIC_STEP && steps<6){
 
 update();
@@ -10356,6 +10407,8 @@ steps++;
 }
 
 draw();
+
+}catch(err){ console.error('frame error',err); stepAccumulator=0; }
 
 requestAnimationFrame(loop);
 
