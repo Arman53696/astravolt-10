@@ -10346,6 +10346,10 @@ stepAccumulator+=elapsed;
    even when the device throttles rendering to 30fps while idle */
 let steps=0;
 
+/* one bad frame must never kill the animation loop — otherwise the
+   game would look frozen ("crashed") on the device */
+try{
+
 while(stepAccumulator>=LOGIC_STEP && steps<6){
 
 update();
@@ -10356,6 +10360,8 @@ steps++;
 }
 
 draw();
+
+}catch(err){ console.error('frame error',err); stepAccumulator=0; }
 
 requestAnimationFrame(loop);
 
