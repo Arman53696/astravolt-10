@@ -8082,12 +8082,26 @@ window.addEventListener("keydown",e=>{
   if(e.key==="Escape"){ if(handleBackAction()) e.preventDefault(); }
 });
 
-/* Android hardware / gesture back inside the native app */
+/* Android hardware / gesture back inside the native app.
+   Inside the game, back asks to quit; on other screens it closes the
+   top-most modal/menu or minimizes the app at home. */
 (function(){
   const App=window.Capacitor?.Plugins?.App;
   if(!App||!App.addListener) return;
   App.addListener("backButton",()=>{
-    if(!handleBackAction()) App.minimizeApp?.();
+    if(isShown("quitConfirmModal")){ closeQuitConfirm(); return; }
+    if(isShown("ppModal")){ closeLegal("pp"); return; }
+    if(isShown("tcModal")){ closeLegal("tc"); return; }
+    if(isShown("accountPickerModal")){ closeAccountPicker(); return; }
+    if(isShown("accountMenuModal")){ closeAccountMenu(); return; }
+    if(isShown("resetConfirmModal")){ closeResetConfirm(); return; }
+    if(isShown("noCoinModal")){ closeNoCoin(); return; }
+    if(isShown("settingsSheet")){ closeSettings(); return; }
+    if(isShown("shopSheet")){ closeShop(); return; }
+    if(isShown("levelModal")){ closeLevelSelect(); return; }
+    if(isShown("pauseModal")){ showQuitConfirm(); return; }
+    if(typeof isPlaying!=="undefined" && isPlaying){ showQuitConfirm(); return; }
+    App.minimizeApp?.();
   });
 })();
 
