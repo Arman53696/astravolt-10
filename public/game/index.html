@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <title>Astravolt</title>
 
@@ -77,13 +77,28 @@
     --red:#ef4444;
     --green:#10b981;
     --bg-dark:#0d122b;
+    --app-height:100dvh;
 }
 
 html,body{
     width:100%;
-    height:100%;
+    height:var(--app-height);
+    min-height:var(--app-height);
+    max-height:var(--app-height);
     background:#010206;
     overflow:hidden;
+    overscroll-behavior:none;
+    touch-action:none;
+    position:fixed;
+    inset:0;
+}
+
+body{contain:layout paint size;}
+button,input,select,a,[role="button"]{touch-action:manipulation;}
+.level-map,.store-scroll,.set-nav,.set-panel,.legal-body,.account-list{
+    touch-action:pan-y;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
 }
 
 #levelModal .level-shell{
@@ -354,9 +369,9 @@ html,body{
 
 canvas{
     display:block;
-    width:100vw;
-    height:100vh;
-    position:absolute;
+    width:100%;
+    height:var(--app-height);
+    position:fixed;
     top:0;
     left:0;
 }
@@ -426,6 +441,14 @@ canvas{
     align-items:center;
     z-index:1000;
     animation:fadeIn .15s ease;
+    width:100%;
+    height:var(--app-height);
+    max-height:var(--app-height);
+    overflow:hidden;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-right:env(safe-area-inset-right,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    padding-left:env(safe-area-inset-left,0px);
 }
 
 @keyframes fadeIn{
@@ -447,6 +470,9 @@ canvas{
     text-align:center;
     box-shadow:0 0 34px rgba(34,211,238,.35),inset 0 0 26px rgba(34,211,238,.12),
                0 12px 34px rgba(0,0,0,.6);
+    max-height:calc(var(--app-height) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 24px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
 }
 /* angled corner accents like the HUD reference panels */
 .card::before,.card::after{
@@ -502,6 +528,10 @@ canvas{
     z-index:2000;
     padding:12px;
     animation:fadeIn .15s ease;
+    width:100%;
+    height:var(--app-height);
+    max-height:var(--app-height);
+    overflow:hidden;
 }
 
 .sheet-box{
@@ -1755,7 +1785,8 @@ canvas{
 .home-shell{
     position:relative;
     width:100%;
-    height:100dvh;
+    height:var(--app-height);
+    max-height:var(--app-height);
     display:flex;
     flex-direction:column;
     gap:8px;
@@ -2369,6 +2400,15 @@ canvas{
     .home-stat{min-height:43px;padding:4px 7px}.home-stat-value{font-size:16px}
     .play-btn{min-height:43px;padding:7px;font-size:20px}
     .home-tile{min-height:48px;padding:5px 2px}.home-tile .tile-icon{width:27px;height:30px}.home-tile .tile-icon .ic{width:14px;height:14px}
+    .home-banner{display:none}
+}
+
+@media (max-height:520px){
+    .home-shell{gap:4px}
+    .home-logo-img{max-height:18vh;width:min(36vw,140px)}
+    .home-stats{gap:6px}.home-stat{min-height:38px}
+    .play-btn{min-height:38px;font-size:18px}
+    .home-tile{min-height:42px}.home-tile .tile-label{font-size:8.5px}
 }
 
 /* REWARD AD MODAL */
@@ -2539,7 +2579,7 @@ canvas{
 
 .skin-item .skin-name{font-size:13.5px;letter-spacing:.05em;}
 .legal-ov{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(2,6,18,.82);backdrop-filter:blur(6px)}
-.legal-card{width:min(560px,92vw);max-height:78vh;display:flex;flex-direction:column;background:linear-gradient(160deg,#0a1430,#050a1c);
+.legal-card{width:min(560px,92vw);max-height:calc(var(--app-height) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 28px);display:flex;flex-direction:column;background:linear-gradient(160deg,#0a1430,#050a1c);
   border:1px solid rgba(70,197,255,.4);border-radius:18px;box-shadow:0 0 34px rgba(47,211,255,.35);overflow:hidden}
 .legal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(70,197,255,.25)}
 .legal-title{font-weight:900;letter-spacing:2px;color:#8fe4ff;font-size:15px;text-shadow:0 0 10px rgba(47,211,255,.8)}
@@ -3632,28 +3672,57 @@ clearInterval(waitForGsi);
 const canvas=document.getElementById("gameCanvas");
 const ctx=canvas.getContext("2d");
 
-let W=window.innerWidth;
-let H=window.innerHeight;
+function getAppViewport(){
+
+const viewport=window.visualViewport;
+
+return {
+width:Math.max(1,Math.round(viewport?viewport.width:window.innerWidth)),
+height:Math.max(1,Math.round(viewport?viewport.height:window.innerHeight))
+};
+
+}
+
+function syncAppHeight(){
+
+const size=getAppViewport();
+
+document.documentElement.style.setProperty("--app-height",size.height+"px");
+
+return size;
+
+}
+
+let initialViewport=syncAppHeight();
+let W=initialViewport.width;
+let H=initialViewport.height;
 
 canvas.width=W;
 canvas.height=H;
 
 
-window.addEventListener("resize",()=>{
+function resizeGameViewport(){
 
-W=window.innerWidth;
-H=window.innerHeight;
+let size=syncAppHeight();
+W=size.width;
+H=size.height;
 
 canvas.width=W;
 canvas.height=H;
 
-player.x=W/2-player.w/2;
-player.y=H-player.h-48;
+if(typeof player!=="undefined"&&player){
+player.x=Math.min(Math.max(0,player.x),Math.max(0,W-player.w));
+player.y=Math.min(Math.max(58,player.y),Math.max(58,H-player.h-16));
 
 targetX=player.x;
 targetY=player.y;
+}
 
-});
+}
+
+window.addEventListener("resize",resizeGameViewport,{passive:true});
+window.addEventListener("orientationchange",()=>setTimeout(resizeGameViewport,120),{passive:true});
+if(window.visualViewport) window.visualViewport.addEventListener("resize",resizeGameViewport,{passive:true});
 
 
 /* =========================
