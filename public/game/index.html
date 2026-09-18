@@ -2553,16 +2553,19 @@ canvas{
 
 <body>
 
-<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(120% 90% at 50% 8%,#12246b 0%,#070c28 45%,#02030d 100%);font-family:inherit;color:#dbe9ff">
-  <div style="position:absolute;inset:0;background:url('home-bg.jpg') center/cover no-repeat;opacity:.35;filter:saturate(1.2)"></div>
-  <img src="logo.png" alt="Astravolt" style="position:relative;width:min(78vw,420px);max-height:34vh;object-fit:contain;filter:drop-shadow(0 0 26px rgba(56,189,248,.65))">
-  <div style="position:relative;width:min(74vw,380px)">
-    <div style="height:16px;border:2px solid rgba(56,189,248,.75);border-radius:999px;background:rgba(3,10,32,.75);box-shadow:0 0 18px rgba(56,189,248,.45) inset,0 0 22px rgba(56,189,248,.25);overflow:hidden">
-      <div id="bootBar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#60a5fa,#a855f7);transition:width .25s ease"></div>
+<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#020617 url('loading-bg.webp') center/cover no-repeat;font-family:inherit;color:#eef8ff;overflow:hidden">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(1,4,18,.02),rgba(1,4,18,.12) 52%,rgba(1,4,18,.62) 100%)"></div>
+  <div style="position:relative;width:min(92vw,560px);display:flex;flex-direction:column;align-items:center;transform:translateY(4vh)">
+    <img src="ships/nova.png" alt="" style="width:min(43vw,225px);height:auto;filter:drop-shadow(0 0 14px #22d3ee) drop-shadow(0 18px 22px rgba(0,94,255,.75));margin-bottom:-8px">
+    <img src="loading-logo.webp" alt="Astravolt" style="width:min(91vw,540px);height:auto;filter:drop-shadow(0 0 18px rgba(34,211,238,.8));margin-bottom:clamp(28px,5vh,48px)">
+    <div style="width:min(78vw,430px);padding:5px;border:3px solid #a7dbff;clip-path:polygon(5% 0,95% 0,100% 30%,100% 70%,95% 100%,5% 100%,0 70%,0 30%);background:#071532;box-shadow:0 0 0 3px #1268d4,0 0 22px #00bfff">
+      <div style="height:19px;padding:3px;background:#020b24;clip-path:inherit;overflow:hidden">
+        <div id="bootBar" style="height:100%;width:0%;background:repeating-linear-gradient(120deg,#00aee9 0 25px,#25e9ff 26px 48px);box-shadow:0 0 15px #24e5ff;transition:width .18s ease"></div>
+      </div>
     </div>
-    <div id="bootPct" style="margin-top:10px;text-align:center;letter-spacing:.28em;font-size:15px;color:#9fd8ff">0%</div>
+    <div id="bootPct" style="margin:8px 0 23px;font-size:24px;font-weight:900;text-shadow:0 0 10px #168dff">0%</div>
+    <div id="bootTip" style="width:min(66vw,350px);min-height:66px;display:flex;align-items:center;padding:10px 18px;border:2px solid #20b7ff;clip-path:polygon(8% 0,92% 0,100% 28%,100% 72%,92% 100%,8% 100%,0 72%,0 28%);background:rgba(2,12,42,.92);box-shadow:0 0 15px rgba(0,187,255,.7);font-size:12px;line-height:1.45"><span style="font-size:29px;margin-right:14px">💡</span><span><b style="color:#24e8f2">TIP:</b><br>Upgrade your ship to survive stronger enemies!</span></div>
   </div>
-  <div id="bootTip" style="position:relative;max-width:min(80vw,420px);text-align:center;padding:12px 16px;border:1px solid rgba(56,189,248,.45);border-radius:14px;background:rgba(4,12,36,.6);font-size:13px;line-height:1.5;color:#c9dcff"><b style="color:#5ee2ff">TIP:</b> Upgrade your ship to survive stronger enemies!</div>
 </div>
 
 
@@ -5465,9 +5468,6 @@ function loadBossSprite(img){
  return im;
 }
 
-/* Boss artwork is a default game texture: decode it before its battle. */
-BOSS_DEFS.forEach(function(def){ loadBossSprite(def.img); });
-
 function spawnBoss(lvl){
 
 /* boss toughness ramps hard with the level: later worlds are
@@ -6634,10 +6634,10 @@ window.__astraPreload.push(img);
 });
 
 
-/* background art is part of the default texture set - decode it up front
-   so menus, the level map and the battle scene never pop in late */
+/* Only first-view backgrounds block the loader. Store and battle artwork
+   load quietly afterwards, when the browser is idle. */
 const BG_TEXTURES={};
-["level-bg.png","space-battle-bg.png","store-bg.jpg","home-bg.jpg","logo.png"]
+ ["loading-bg.webp","loading-logo.webp","home-bg.jpg","logo.png"]
 .forEach(function(src){
  let im=new Image();
  im.decoding="async";
@@ -6645,6 +6645,11 @@ const BG_TEXTURES={};
  BG_TEXTURES[src]=im;
  window.__astraPreload.push(im);
 });
+setTimeout(function(){
+ ["level-bg.png","space-battle-bg.png","store-bg.jpg"].forEach(function(src){
+  let im=new Image(); im.decoding="async"; im.src=src; BG_TEXTURES[src]=im;
+ });
+},4200);
 
 
 function drawRocketBody(ctx,w,h,shape,accentColor,outlineColor,thrust){
@@ -10400,7 +10405,7 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
  if(!el) return;
  var bar=document.getElementById("bootBar"), pct=document.getElementById("bootPct"),
      tipEl=document.getElementById("bootTip");
- var MIN=4000, MAX=20000, start=Date.now(), shown=0, done=false;
+ var MIN=4000, MAX=8000, start=Date.now(), shown=0, done=false;
 
  var tips=[
   "Upgrade your ship to survive stronger enemies!",
@@ -10437,7 +10442,7 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 
  var tick=setInterval(function(){
   var t=Date.now()-start;
-  var target=Math.min(t/MIN,1)*0.5 + assetProgress()*0.5;
+  var target=Math.min(t/MIN,1)*0.65 + assetProgress()*0.35;
   shown=Math.max(shown,Math.min(target,0.99));
   if(bar) bar.style.width=(shown*100).toFixed(0)+"%";
   if(pct) pct.textContent=Math.round(shown*100)+"%";
