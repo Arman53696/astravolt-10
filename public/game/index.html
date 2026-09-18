@@ -2553,6 +2553,19 @@ canvas{
 
 <body>
 
+<div id="bootLoader" style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(120% 90% at 50% 8%,#12246b 0%,#070c28 45%,#02030d 100%);font-family:inherit;color:#dbe9ff">
+  <div style="position:absolute;inset:0;background:url('home-bg.jpg') center/cover no-repeat;opacity:.35;filter:saturate(1.2)"></div>
+  <img src="logo.png" alt="Astravolt" style="position:relative;width:min(78vw,420px);max-height:34vh;object-fit:contain;filter:drop-shadow(0 0 26px rgba(56,189,248,.65))">
+  <div style="position:relative;width:min(74vw,380px)">
+    <div style="height:16px;border:2px solid rgba(56,189,248,.75);border-radius:999px;background:rgba(3,10,32,.75);box-shadow:0 0 18px rgba(56,189,248,.45) inset,0 0 22px rgba(56,189,248,.25);overflow:hidden">
+      <div id="bootBar" style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#22d3ee,#60a5fa,#a855f7);transition:width .25s ease"></div>
+    </div>
+    <div id="bootPct" style="margin-top:10px;text-align:center;letter-spacing:.28em;font-size:15px;color:#9fd8ff">0%</div>
+  </div>
+  <div id="bootTip" style="position:relative;max-width:min(80vw,420px);text-align:center;padding:12px 16px;border:1px solid rgba(56,189,248,.45);border-radius:14px;background:rgba(4,12,36,.6);font-size:13px;line-height:1.5;color:#c9dcff"><b style="color:#5ee2ff">TIP:</b> Upgrade your ship to survive stronger enemies!</div>
+</div>
+
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
 <defs>
 <linearGradient id="gShield" x1="0" y1="0" x2="1" y2="1">
@@ -6604,6 +6617,7 @@ ctx.restore();
 }
 
 /* ---- reference ship artwork (one sprite per skin) ---- */
+window.__astraPreload=window.__astraPreload||[];
 const SHIP_SPRITES={};
 ["nova","inferno","valkyr","shadow","void","orion"].forEach(function(id){
 let img=new Image();
@@ -6614,6 +6628,7 @@ if(g && g.style.display!=="none"){ try{ renderSkins(); }catch(e){} }
 img.decoding="async";
 img.src="ships/"+id+".png";
 SHIP_SPRITES[id]=img;
+window.__astraPreload.push(img);
 });
 
 
@@ -6626,6 +6641,7 @@ const BG_TEXTURES={};
  im.decoding="async";
  im.src=src;
  BG_TEXTURES[src]=im;
+ window.__astraPreload.push(im);
 });
 
 
@@ -10373,6 +10389,61 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 
 </script>
 <!-- 3D overlay disabled: reference ship/boss sprites are used instead -->
+
+<script>
+/* Boot loading screen: shows for at least 4s, longer if artwork is still
+   decoding, so backgrounds and sprites are ready before the game appears. */
+(function(){
+ var el=document.getElementById("bootLoader");
+ if(!el) return;
+ var bar=document.getElementById("bootBar"), pct=document.getElementById("bootPct"),
+     tipEl=document.getElementById("bootTip");
+ var MIN=4000, MAX=20000, start=Date.now(), shown=0, done=false;
+
+ var tips=[
+  "Upgrade your ship to survive stronger enemies!",
+  "Collect coins to unlock new ships and skins.",
+  "Ship Gun level 3 gives you a double shot.",
+  "Shields absorb one hit — grab them when you can.",
+  "Boss levels are marked in red on the map."
+ ];
+ var ti=0;
+ var tipTimer=setInterval(function(){
+  ti=(ti+1)%tips.length;
+  if(tipEl) tipEl.innerHTML='<b style="color:#5ee2ff">TIP:</b> '+tips[ti];
+ },2600);
+
+ function assetProgress(){
+  var list=window.__astraPreload||[];
+  if(!list.length) return document.readyState==="complete"?1:0.5;
+  var ready=0;
+  for(var i=0;i<list.length;i++){ if(list[i].complete) ready++; }
+  var p=ready/list.length;
+  if(document.readyState!=="complete") p=Math.min(p,0.95);
+  return p;
+ }
+
+ function finish(){
+  if(done) return; done=true;
+  clearInterval(tipTimer); clearInterval(tick);
+  if(bar) bar.style.width="100%";
+  if(pct) pct.textContent="100%";
+  el.style.transition="opacity .45s ease";
+  el.style.opacity="0";
+  setTimeout(function(){ el.remove(); },500);
+ }
+
+ var tick=setInterval(function(){
+  var t=Date.now()-start;
+  var target=Math.min(t/MIN,1)*0.5 + assetProgress()*0.5;
+  shown=Math.max(shown,Math.min(target,0.99));
+  if(bar) bar.style.width=(shown*100).toFixed(0)+"%";
+  if(pct) pct.textContent=Math.round(shown*100)+"%";
+  if((t>=MIN && assetProgress()>=1) || t>=MAX) finish();
+ },120);
+})();
+</script>
+
 
 </body>
 </html>
