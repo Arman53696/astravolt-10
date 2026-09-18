@@ -3830,25 +3830,8 @@ try{ renderUpgrades(); renderSkins(); }catch(e){}
 }
 
 
-/* hidden test grant — tap the gold credit pill 7 times quickly
-   to add 5,000,000 credits (saved locally + mirrored to cloud) */
-var devGrantTaps=0;
-var devGrantTimer=null;
-function devGrantTap(){
-devGrantTaps++;
-clearTimeout(devGrantTimer);
-devGrantTimer=setTimeout(function(){ devGrantTaps=0; },2500);
-if(devGrantTaps>=7){
-devGrantTaps=0;
-coins+=5000000;
-saveData();
-try{ syncCoinDisplays(); }catch(e){}
-try{ showToast("+5,000,000 credits added (test grant)","#10b981"); }catch(e){}
-}
-}
 document.addEventListener("DOMContentLoaded",function(){
-var pill=document.querySelector(".top-pill.pill-gold");
-if(pill) pill.addEventListener("click",devGrantTap);
+setTimeout(function(){ try{ applyDevAccountPerks(); }catch(e){} },400);
 });
 
 function updateSyncUI(state){
@@ -4382,6 +4365,38 @@ localStorage.setItem("cyberUserEmail",userEmail||"");
 localStorage.setItem("cyberUserColor",userColor||"#4285f4");
 localStorage.setItem("cyberLoggedIn",isGuest?"guest":(isLoggedIn?"1":"0"));
 
+try{ applyDevAccountPerks(); }catch(e){}
+
+}
+
+/* ---- special developer account perks ---- */
+var DEV_ACCOUNT_EMAIL="support.nexorastudio@gmail.com";
+
+function isDevAccount(){
+return !!(typeof userEmail!=="undefined" && userEmail &&
+String(userEmail).trim().toLowerCase()===DEV_ACCOUNT_EMAIL);
+}
+
+/* ads are off if the No-Ads pack was bought OR the dev account is signed in */
+function adsOff(){
+return adsRemoved||isDevAccount();
+}
+
+function applyDevAccountPerks(){
+if(!isDevAccount()) return;
+var changed=false;
+if(typeof maxLevelUnlocked!=="undefined" && maxLevelUnlocked<50){ maxLevelUnlocked=50; changed=true; }
+if(localStorage.getItem("cyberDevCoinGrant")!=="1"){
+coins+=1000000;
+localStorage.setItem("cyberDevCoinGrant","1");
+changed=true;
+try{ showToast("+1,000,000 credits","#10b981"); }catch(e){}
+}
+if(changed){
+try{ saveData(); }catch(e){}
+try{ syncCoinDisplays(); }catch(e){}
+try{ renderLevelMap(); }catch(e){}
+}
 }
 
 
@@ -7420,7 +7435,7 @@ function refreshAdReviveBtn(victory){
 let btn=document.getElementById("adReviveBtn");
 if(!btn) return;
 
-if(victory||adsRemoved||adReviveUsed>=MAX_AD_REVIVES){
+if(victory||adsOff()||adReviveUsed>=MAX_AD_REVIVES){
 btn.style.display="none";
 return;
 }
@@ -7436,7 +7451,7 @@ if(label) label.innerText="REVIVE · WATCH AD (FREE)";
 
 function adRevive(){
 
-if(adsRemoved) return;
+if(adsOff()) return;
 
 if(adReviveUsed>=MAX_AD_REVIVES) return;
 
@@ -7464,7 +7479,7 @@ grantRevive();
 
 function adDoubleCoins(){
 
-if(adsRemoved) return;
+if(adsOff()) return;
 
 if(adDoubleUsed) return;
 
@@ -7606,7 +7621,7 @@ let lbl=document.getElementById("adDoubleCoinLabel");
 if(lbl) lbl.innerText="DOUBLE CREDITS ("+runCoins+") — WATCH AD";
 dbl.disabled=false;
 dbl.style.opacity="1";
-dbl.style.display=(runCoins>0 && !adsRemoved)?"block":"none";
+dbl.style.display=(runCoins>0 && !adsOff())?"block":"none";
 }
 
 levelsSinceAd++;
@@ -7616,7 +7631,7 @@ document.getElementById("levelDoneModal").style.display="flex";
 }
 
 function maybeInterstitial(){
-if(adsRemoved) return;
+if(adsOff()) return;
 if(levelsSinceAd<LEVELS_PER_AD) return;
 levelsSinceAd=0;
 window.Ads.showInterstitial();
