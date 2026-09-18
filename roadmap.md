@@ -21,3 +21,4 @@
 - [x] Flip ship-shaped enemy sprites 180° to face the player (beam sprites untouched).
 - [x] Locked boss levels show faded skull + BOSS tag instead of a lock icon.
 - [x] Verified both changes in the live preview (level map screenshot, boss level 10).
+- [x] Keep every home-screen option visible inside the usable mobile viewport.
