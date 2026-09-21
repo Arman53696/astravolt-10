@@ -2278,8 +2278,8 @@ canvas{
 .home-shell{
     gap:10px;
     padding:calc(env(safe-area-inset-top,0px) + 8px) 14px calc(env(safe-area-inset-bottom,0px) + 14px);
-    display:grid;
-    grid-template-rows:auto auto minmax(0,1fr) auto auto auto;
+    display:flex;
+    flex-direction:column;
 }
 
 .home-topbar{
@@ -3614,7 +3614,54 @@ return;
 
 let gsiTokenClient=null;
 
+/* ---- Native (Android APK) Google Sign-In ----
+   Inside the Capacitor WebView the Google popup flow is blocked,
+   so we use the native account picker through the SocialLogin plugin. */
+
+let nativeGoogleReady=false;
+
+function isNativeApp(){
+try{
+return !!(window.Capacitor && (typeof Capacitor.isNativePlatform==="function"
+? Capacitor.isNativePlatform() : Capacitor.isNative));
+}catch(e){ return false; }
+}
+
+async function startNativeGoogleLogin(){
+
+let SL=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SocialLogin;
+if(!SL) return false;
+
+if(!nativeGoogleReady){
+await SL.initialize({google:{webClientId:GOOGLE_CLIENT_ID,mode:"online"}});
+nativeGoogleReady=true;
+}
+
+let res=await SL.login({provider:"google",options:{scopes:["email","profile"]}});
+let r=(res&&res.result)||{};
+let token=r.accessToken&&r.accessToken.token;
+
+if(token){ await fetchGoogleProfile(token); return true; }
+if(r.idToken){ handleGoogleSignIn({credential:r.idToken}); return true; }
+
+return false;
+
+}
+
 function startGoogleLogin(){
+
+if(isNativeApp()){
+
+startNativeGoogleLogin().then(ok=>{
+if(!ok) showToast("Sign-in cancelled");
+}).catch(err=>{
+console.error("Native Google sign-in failed:",err);
+showToast("Sign-in cancelled");
+});
+
+return;
+
+}
 
 if(!(window.google&&google.accounts&&google.accounts.oauth2)){
 
