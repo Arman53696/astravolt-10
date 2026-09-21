@@ -8396,7 +8396,9 @@ let levelRamp=(levelForDiff-1)*0.015;
 
 /* Wings-style pacing: keep the screen readable and release one ship at a time.
    The cap rises very gently, never becoming a sudden wall of enemies. */
-let activeEnemyCap=(level<4?4:(level<10?5:6))+((waveBp&&waveBp.cap)||0);
+/* after level 20 the field can hold up to 10 enemies at once */
+let baseCap=(level<4?4:(level<10?5:(level<=20?6:Math.min(10,6+Math.ceil((level-20)/5)))));
+let activeEnemyCap=baseCap+((waveBp&&waveBp.cap)||0);
 let spawnChance=0.0125*dm.spawn*(1+scoreRamp*0.30)*(1+levelRamp)*((waveBp&&waveBp.rate)||1);
 let speedMult=dm.speed*(1+scoreRamp*0.28)*(1+levelRamp*0.6);
 
