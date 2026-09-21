@@ -4324,7 +4324,7 @@ refreshToggles();
 
 function onFxVolumeInput(val){
 
-soundVolume=Number(val)/100;
+soundVolume=Number(val)/100*AUDIO_BOOST;
 
 let fxPct=document.getElementById("fxVolumePct");
 
