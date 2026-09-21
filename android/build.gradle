@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+
     repositories {
         google()
         mavenCentral()
@@ -22,8 +22,20 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Keep every module (app + Capacitor/Cordova plugins) on the same JVM target.
+    // Prevents "Inconsistent JVM-target compatibility" build failures.
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+    plugins.withId('org.jetbrains.kotlin.android') {
+        kotlin {
+            jvmToolchain(21)
+        }
+    }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
 }

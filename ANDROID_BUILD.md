@@ -53,3 +53,21 @@ add a `signingConfig` in `android/app/build.gradle` with your keystore.
   WebView. Use "Continue as Guest", or add a native Google Sign-In plugin if
   you need accounts in the app.
 - After changing anything in `public/game/`, run `npx cap sync android` again.
+
+## Build/Gradle error হলে (Windows)
+
+Android Studio বন্ধ করে PowerShell-এ:
+
+```powershell
+cd android
+./gradlew --stop
+Remove-Item -Recurse -Force "$env:USERPROFILE\.gradle\caches"
+Remove-Item -Recurse -Force .gradle, build, app\build -ErrorAction SilentlyContinue
+./gradlew clean --no-daemon
+./gradlew assembleRelease
+```
+
+শর্ত:
+- Android Studio-র Gradle JDK অবশ্যই **JDK 21** (Settings > Build Tools > Gradle)।
+- কোড আপডেটের পর সবসময়: `git pull` → `npm install` → `npx cap sync android`।
+- release signing-এর জন্য `android/keystore.properties` + আসল `.jks` ফাইল লাগবে; না থাকলে release বিল্ড unsigned হবে কিন্তু ফেল করবে না।
