@@ -3897,8 +3897,10 @@ hard:savedBestHard!==null ? Number(savedBestHard) : 0
 };
 
 let soundOn=savedSound!==null ? savedSound==="1" : true;
-let soundVolume=savedFxVolume!==null ? Number(savedFxVolume)/100 : 0.7;
-let musicVolume=savedMusicVolume!==null ? Number(savedMusicVolume)/100 : 0.7;
+/* Overall loudness boost so the game is clearly audible on phone speakers */
+const AUDIO_BOOST=3;
+let soundVolume=(savedFxVolume!==null ? Number(savedFxVolume)/100 : 0.7)*AUDIO_BOOST;
+let musicVolume=(savedMusicVolume!==null ? Number(savedMusicVolume)/100 : 0.7)*AUDIO_BOOST;
 let vibrationOn=savedVibration!==null ? savedVibration==="1" : true;
 let shakeOn=savedShake!==null ? savedShake==="1" : true;
 let difficulty=savedDiff!==null ? savedDiff : "normal";
