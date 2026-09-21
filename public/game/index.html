@@ -3897,8 +3897,10 @@ hard:savedBestHard!==null ? Number(savedBestHard) : 0
 };
 
 let soundOn=savedSound!==null ? savedSound==="1" : true;
-let soundVolume=savedFxVolume!==null ? Number(savedFxVolume)/100 : 0.7;
-let musicVolume=savedMusicVolume!==null ? Number(savedMusicVolume)/100 : 0.7;
+/* Overall loudness boost so the game is clearly audible on phone speakers */
+const AUDIO_BOOST=3;
+let soundVolume=(savedFxVolume!==null ? Number(savedFxVolume)/100 : 0.7)*AUDIO_BOOST;
+let musicVolume=(savedMusicVolume!==null ? Number(savedMusicVolume)/100 : 0.7)*AUDIO_BOOST;
 let vibrationOn=savedVibration!==null ? savedVibration==="1" : true;
 let shakeOn=savedShake!==null ? savedShake==="1" : true;
 let difficulty=savedDiff!==null ? savedDiff : "normal";
@@ -3946,8 +3948,8 @@ localStorage.setItem("cyberBest_easy",bestScores.easy);
 localStorage.setItem("cyberBest_normal",bestScores.normal);
 localStorage.setItem("cyberBest_hard",bestScores.hard);
 localStorage.setItem("cyberSound",soundOn?"1":"0");
-localStorage.setItem("cyberVolume",Math.round(soundVolume*100));
-localStorage.setItem("cyberMusicVolume",Math.round(musicVolume*100));
+localStorage.setItem("cyberVolume",Math.round(soundVolume/AUDIO_BOOST*100));
+localStorage.setItem("cyberMusicVolume",Math.round(musicVolume/AUDIO_BOOST*100));
 localStorage.setItem("cyberVibration",vibrationOn?"1":"0");
 localStorage.setItem("cyberShake",shakeOn?"1":"0");
 localStorage.setItem("cyberDifficulty",difficulty);
@@ -4290,14 +4292,14 @@ document.getElementById("shakeToggle").classList.toggle("on",shakeOn);
 let fxSlider=document.getElementById("fxVolumeSlider");
 let fxPct=document.getElementById("fxVolumePct");
 
-if(fxSlider) fxSlider.value=Math.round(soundVolume*100);
-if(fxPct) fxPct.innerText=Math.round(soundVolume*100)+"%";
+if(fxSlider) fxSlider.value=Math.round(soundVolume/AUDIO_BOOST*100);
+if(fxPct) fxPct.innerText=Math.round(soundVolume/AUDIO_BOOST*100)+"%";
 
 let mSlider=document.getElementById("musicVolumeSlider");
 let mPct=document.getElementById("musicVolumePct");
 
-if(mSlider) mSlider.value=Math.round(musicVolume*100);
-if(mPct) mPct.innerText=Math.round(musicVolume*100)+"%";
+if(mSlider) mSlider.value=Math.round(musicVolume/AUDIO_BOOST*100);
+if(mPct) mPct.innerText=Math.round(musicVolume/AUDIO_BOOST*100)+"%";
 
 document.querySelectorAll(".diff-opt").forEach(btn=>{
 
@@ -4322,7 +4324,7 @@ refreshToggles();
 
 function onFxVolumeInput(val){
 
-soundVolume=Number(val)/100;
+soundVolume=Number(val)/100*AUDIO_BOOST;
 
 let fxPct=document.getElementById("fxVolumePct");
 
@@ -4333,7 +4335,7 @@ if(fxPct) fxPct.innerText=val+"%";
 
 function onFxVolumeChange(val){
 
-soundVolume=Number(val)/100;
+soundVolume=Number(val)/100*AUDIO_BOOST;
 
 saveData();
 
@@ -4344,7 +4346,7 @@ if(soundOn) playTone(520,0.08,0.12,"sine");
 
 function onMusicVolumeInput(val){
 
-musicVolume=Number(val)/100;
+musicVolume=Number(val)/100*AUDIO_BOOST;
 
 let mPct=document.getElementById("musicVolumePct");
 
@@ -4357,7 +4359,7 @@ updateBgMusicVolume();
 
 function onMusicVolumeChange(val){
 
-musicVolume=Number(val)/100;
+musicVolume=Number(val)/100*AUDIO_BOOST;
 
 saveData();
 
@@ -8394,7 +8396,9 @@ let levelRamp=(levelForDiff-1)*0.015;
 
 /* Wings-style pacing: keep the screen readable and release one ship at a time.
    The cap rises very gently, never becoming a sudden wall of enemies. */
-let activeEnemyCap=(level<4?4:(level<10?5:6))+((waveBp&&waveBp.cap)||0);
+/* after level 20 the field can hold up to 10 enemies at once */
+let baseCap=(level<4?4:(level<10?5:(level<=20?6:Math.min(10,6+Math.ceil((level-20)/5)))));
+let activeEnemyCap=baseCap+((waveBp&&waveBp.cap)||0);
 let spawnChance=0.0125*dm.spawn*(1+scoreRamp*0.30)*(1+levelRamp)*((waveBp&&waveBp.rate)||1);
 let speedMult=dm.speed*(1+scoreRamp*0.28)*(1+levelRamp*0.6);
 
@@ -8407,7 +8411,7 @@ let forceSpawn=emptyFrames>70;
 if(enemies.length<activeEnemyCap && enemySpawnCooldown<=0 && (forceSpawn || Math.random()<spawnChance)){
  emptyFrames=0;
  /* early levels breathe more; higher levels accelerate without burst spawning */
- enemySpawnCooldown=Math.max(38,76-Math.min(level,20)*2)+Math.floor(Math.random()*24);
+ enemySpawnCooldown=(level>20?Math.max(14,30-Math.min(level-20,20)) : Math.max(38,76-Math.min(level,20)*2))+Math.floor(Math.random()*(level>20?12:24));
 
  let def=pickEnemyType();
  /* Pick the least crowded formation lane instead of stacking ships together. */
