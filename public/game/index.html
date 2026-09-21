@@ -4346,7 +4346,7 @@ if(soundOn) playTone(520,0.08,0.12,"sine");
 
 function onMusicVolumeInput(val){
 
-musicVolume=Number(val)/100;
+musicVolume=Number(val)/100*AUDIO_BOOST;
 
 let mPct=document.getElementById("musicVolumePct");
 
