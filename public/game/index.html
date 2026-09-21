@@ -8411,7 +8411,7 @@ let forceSpawn=emptyFrames>70;
 if(enemies.length<activeEnemyCap && enemySpawnCooldown<=0 && (forceSpawn || Math.random()<spawnChance)){
  emptyFrames=0;
  /* early levels breathe more; higher levels accelerate without burst spawning */
- enemySpawnCooldown=Math.max(38,76-Math.min(level,20)*2)+Math.floor(Math.random()*24);
+ enemySpawnCooldown=(level>20?Math.max(14,30-Math.min(level-20,20)) : Math.max(38,76-Math.min(level,20)*2))+Math.floor(Math.random()*(level>20?12:24));
 
  let def=pickEnemyType();
  /* Pick the least crowded formation lane instead of stacking ships together. */
