@@ -4359,7 +4359,7 @@ updateBgMusicVolume();
 
 function onMusicVolumeChange(val){
 
-musicVolume=Number(val)/100;
+musicVolume=Number(val)/100*AUDIO_BOOST;
 
 saveData();
 
