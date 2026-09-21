@@ -4292,14 +4292,14 @@ document.getElementById("shakeToggle").classList.toggle("on",shakeOn);
 let fxSlider=document.getElementById("fxVolumeSlider");
 let fxPct=document.getElementById("fxVolumePct");
 
-if(fxSlider) fxSlider.value=Math.round(soundVolume*100);
-if(fxPct) fxPct.innerText=Math.round(soundVolume*100)+"%";
+if(fxSlider) fxSlider.value=Math.round(soundVolume/AUDIO_BOOST*100);
+if(fxPct) fxPct.innerText=Math.round(soundVolume/AUDIO_BOOST*100)+"%";
 
 let mSlider=document.getElementById("musicVolumeSlider");
 let mPct=document.getElementById("musicVolumePct");
 
-if(mSlider) mSlider.value=Math.round(musicVolume*100);
-if(mPct) mPct.innerText=Math.round(musicVolume*100)+"%";
+if(mSlider) mSlider.value=Math.round(musicVolume/AUDIO_BOOST*100);
+if(mPct) mPct.innerText=Math.round(musicVolume/AUDIO_BOOST*100)+"%";
 
 document.querySelectorAll(".diff-opt").forEach(btn=>{
 
