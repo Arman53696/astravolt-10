@@ -4335,7 +4335,7 @@ if(fxPct) fxPct.innerText=val+"%";
 
 function onFxVolumeChange(val){
 
-soundVolume=Number(val)/100;
+soundVolume=Number(val)/100*AUDIO_BOOST;
 
 saveData();
 
