@@ -2279,13 +2279,33 @@ canvas{
     gap:10px;
     padding:calc(env(safe-area-inset-top,0px) + 8px) 14px calc(env(safe-area-inset-bottom,0px) + 14px);
     display:grid;
-    grid-template-rows:auto minmax(0,1fr) auto auto auto;
+    grid-template-rows:auto auto minmax(0,1fr) auto auto auto;
 }
 
 .home-topbar{
     gap:9px;
     min-height:42px;
 }
+
+/* Update-available banner */
+.update-banner{
+    display:none;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:8px;
+    background:linear-gradient(90deg,rgba(45,197,255,.16),rgba(124,58,237,.18));
+    border:1.5px solid rgba(45,197,255,.8);
+    box-shadow:0 0 9px rgba(0,174,255,.45),inset 0 0 12px rgba(18,111,191,.22);
+    color:#e6faff;
+    font-size:12px;
+    font-weight:700;
+    text-decoration:none;
+    clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,9px 100%,0 calc(100% - 9px),0 9px);
+}
+.update-banner .ub-badge{background:#2dc5ff;color:#02122b;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:900;flex-shrink:0}
+.update-banner .ub-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.update-banner .ub-action{color:#7df0ff;font-weight:900;letter-spacing:.6px;flex-shrink:0}
 
 .top-pills{gap:8px; flex:1; justify-content:flex-end; min-width:0}
 
@@ -2848,6 +2868,12 @@ Choose an account
 <button class="top-icon-btn" onclick="openSettings()" aria-label="Settings"><svg class="ic"><use href="#i-gear"/></svg></button>
 </div>
 </div>
+
+<a id="updateBanner" class="update-banner" style="display:none" href="https://play.google.com/store/apps/details?id=app.nexora.astravolt" target="_blank" rel="noopener">
+<span class="ub-badge">NEW</span>
+<span class="ub-text" id="ubText">নতুন ভার্সন উপলব্ধ</span>
+<span class="ub-action">UPDATE</span>
+</a>
 
 <div class="home-hero">
 <img class="home-logo-img" src="logo.png" alt="Astravolt" />
@@ -3971,7 +3997,37 @@ try{ renderUpgrades(); renderSkins(); }catch(e){}
 
 document.addEventListener("DOMContentLoaded",function(){
 setTimeout(function(){ try{ applyDevAccountPerks(); }catch(e){} },400);
+setTimeout(function(){ try{ checkForUpdate(); }catch(e){} },1500);
 });
+
+/* ---- Version check / update banner ---- */
+const APP_VERSION_NAME="1.0.1";
+const APP_VERSION_CODE=1;
+const PLAY_STORE_URL="https://play.google.com/store/apps/details?id=app.nexora.astravolt";
+
+async function checkForUpdate(){
+    try{
+        const db=window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL;
+        if(!db) return;
+        const ctrl=new AbortController();
+        const timer=setTimeout(function(){ ctrl.abort(); },4000);
+        const res=await fetch(db.replace(/\/+$/,"")+"/meta/latestVersion.json",{signal:ctrl.signal,cache:"no-store"});
+        clearTimeout(timer);
+        if(!res.ok) return;
+        const meta=await res.json();
+        if(!meta) return;
+        const remoteCode=parseInt(meta.versionCode,10)||0;
+        const newer=remoteCode>APP_VERSION_CODE ||
+            (!remoteCode && meta.versionName && meta.versionName!==APP_VERSION_NAME);
+        if(!newer) return;
+        const banner=document.getElementById("updateBanner");
+        if(!banner) return;
+        banner.href=PLAY_STORE_URL;
+        const txt=document.getElementById("ubText");
+        if(txt) txt.textContent="নতুন ভার্সন উপলব্ধ — v"+(meta.versionName||"?")+" আপডেট করুন";
+        banner.style.display="flex";
+    }catch(e){ /* offline or not configured yet — silently skip */ }
+}
 
 function updateSyncUI(state){
 
