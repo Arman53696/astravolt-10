@@ -9,7 +9,11 @@ canvas.id = 'game3dCanvas';
 canvas.setAttribute('aria-hidden', 'true');
 gameCanvas.insertAdjacentElement('afterend', canvas);
 
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+const fx = () => window.__astraFX || { dpr: 1.25, tier: 2 };
+/* antialiasing (MSAA) on a full-screen phone canvas is one of the most
+   expensive things we can ask a mobile GPU for, and the ships are small
+   and glowing - not worth the framerate */
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: 'high-performance' });
 renderer.setClearColor(0x000000, 0);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -35,6 +39,7 @@ root.add(shipPivot);
 let ship = null;
 let bossModel = null;
 let bossLevel = 0;
+let bossFlash = null;
 let lastSkin = '';
 let failed = false;
 const clock = new THREE.Clock();
@@ -86,7 +91,8 @@ function makeBoss(level){
     if(type==='crystal') for(let i=-2;i<=2;i++) g.add(mesh(new THREE.ConeGeometry(6,32+Math.abs(i)*5,4),light,i*15,18,Math.PI));
   }
   g.scale.setScalar(.95+level*.025);
-  g.userData={core,level};
+  const meshes=[]; g.traverse(o=>{ if(o.isMesh&&o.material) meshes.push(o); });
+  g.userData={core,level,meshes};
   return g;
 }
 function applyShipSkin(id){
@@ -95,7 +101,7 @@ function applyShipSkin(id){
   ship.traverse(o=>{ if(!o.isMesh)return; o.material=metal(base,glow,.42); });
 }
 function resize(w,h){
-  const dpr=Math.min(window.devicePixelRatio||1, window.innerWidth<600?1.25:1.5);
+  const dpr=Math.min(window.devicePixelRatio||1, fx().dpr);
   renderer.setPixelRatio(dpr); renderer.setSize(w,h,false);
   camera.left=-w/2; camera.right=w/2; camera.top=h/2; camera.bottom=-h/2; camera.near=.1; camera.far=1000; camera.updateProjectionMatrix();
 }
@@ -105,6 +111,7 @@ function viewportSize(){
 }
 function resizeToViewport(){ const {w,h}=viewportSize(); resize(w,h); }
 resizeToViewport();
+window.__astra3dQuality=resizeToViewport;
 addEventListener('resize',resizeToViewport,{passive:true});
 window.visualViewport?.addEventListener('resize',resizeToViewport,{passive:true});
 
@@ -135,7 +142,8 @@ function frame(){
       bossModel.rotation.y+=dt*.35;
       const core=bossModel.userData.core; if(core){ const p=1+Math.sin(performance.now()*.008)*.08; core.scale.set(p,.55,p); }
       const spin=bossModel.getObjectByName('spin'); if(spin)spin.rotation.z+=dt*(.8+bossLevel*.07);
-      bossModel.traverse(o=>{ if(o.isMesh&&o.material) o.material.emissiveIntensity=state.boss.hitFlash>0?4:(o.name==='core'?2.8:.2); });
+      const flash=state.boss.hitFlash>0;
+      if(flash!==bossFlash){ bossFlash=flash; for(const o of bossModel.userData.meshes) o.material.emissiveIntensity=flash?4:(o.name==='core'?2.8:.2); }
     }else if(bossModel) bossModel.visible=false;
     renderer.render(scene,camera);
   }
