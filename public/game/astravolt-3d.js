@@ -136,7 +136,7 @@ function frame(){
     shipPivot.rotation.x=Math.sin(performance.now()*.005)*.025;
     applyShipSkin(state.skin);
     if(state.boss){
-      if(!bossModel||bossLevel!==state.boss.level){ if(bossModel)root.remove(bossModel); bossLevel=state.boss.level; bossModel=makeBoss(bossLevel); root.add(bossModel); }
+      if(!bossModel||bossLevel!==state.boss.level){ if(bossModel)root.remove(bossModel); bossLevel=state.boss.level; bossFlash=null; bossModel=makeBoss(bossLevel); root.add(bossModel); }
       bossModel.visible=true;
       bossModel.position.set(state.boss.x-state.w/2,3,state.boss.y-state.h/2);
       bossModel.rotation.y+=dt*.35;
