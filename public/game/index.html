@@ -10801,7 +10801,32 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
       var product = store.get(sku, PLATFORM);
       var offer = product && product.getOffer && product.getOffer();
       if (!offer) {
-        showToast("This coin pack isn't available right now", "#ef4444");
+        /* Play returned no offer for this product ID. Usually the product
+           doesn't exist / isn't active in Play Console, or this build wasn't
+           installed from a Play track. Ask Play for a fresh product list once
+           before giving up, so a slow first sync isn't mistaken for an error. */
+        console.warn("No Play offer for", sku, "- product:", product);
+        showToast("Checking Google Play…");
+        store
+          .update()
+          .then(function () {
+            var again = store.get(sku, PLATFORM);
+            var offer2 = again && again.getOffer && again.getOffer();
+            if (offer2) {
+              purchaseSku(sku, coinsAmount, btnEl);
+            } else {
+              showToast(
+                "This pack isn't available on your Google Play account yet",
+                "#ef4444"
+              );
+            }
+            try {
+              syncPrices();
+            } catch (e) {}
+          })
+          .catch(function () {
+            showToast("Google Play couldn't load this pack", "#ef4444");
+          });
         return;
       }
       busy = true;
