@@ -35,6 +35,13 @@ window.ADMOB_CONFIG = {
 
   var ready = false;
 
+  function note(where, e) {
+    var msg = (e && (e.message || e.errorMessage || e.code)) || e || "unknown";
+    window.__adsLastError = where + ": " + msg;
+    try { console.warn("[Ads] " + window.__adsLastError); } catch (_) {}
+    return msg;
+  }
+
   function init() {
     var AdMob = plugin();
     if (!isNative() || !AdMob) return Promise.resolve(false);
@@ -46,7 +53,8 @@ window.ADMOB_CONFIG = {
         ready = true;
         return true;
       })
-      .catch(function () {
+      .catch(function (e) {
+        note("initialize", e);
         return false;
       });
   }
@@ -98,9 +106,11 @@ window.ADMOB_CONFIG = {
       })
       .then(function (reward) {
         /* a reward object means the user watched it through */
+        window.__adsLastError = null;
         return !!reward;
       })
-      .catch(function () {
+      .catch(function (e) {
+        note("rewarded", e);
         return false;
       });
   }
@@ -127,16 +137,23 @@ window.ADMOB_CONFIG = {
       })
       .then(function () {
         interstitialBusy = false;
+        window.__adsLastError = null;
         return true;
       })
-      .catch(function () {
+      .catch(function (e) {
+        note("interstitial", e);
         interstitialBusy = false;
         return false;
       });
   }
 
+  function lastError() {
+    return window.__adsLastError || null;
+  }
+
   window.Ads = {
     init: init,
+    lastError: lastError,
     isNative: isNative,
     showRewarded: showRewarded,
     showInterstitial: showInterstitial,
