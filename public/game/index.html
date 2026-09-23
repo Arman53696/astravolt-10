@@ -10662,6 +10662,23 @@ steps++;
 
 draw();
 
+/* watchdog: if real frames keep coming in slower than ~48fps we
+   step the effect tier down once and stay there, so a weak phone
+   trades glow for smooth gameplay automatically */
+fxSampleCount++;
+fxSampleTime+=elapsed;
+
+if(fxSampleCount>=60){
+
+let avg=fxSampleTime/fxSampleCount;
+
+fxSampleCount=0;
+fxSampleTime=0;
+
+if(avg>21&&FX.tier>0) applyFXTier(FX.tier-1);
+
+}
+
 }catch(err){ console.error('frame error',err); stepAccumulator=0; }
 
 requestAnimationFrame(loop);
