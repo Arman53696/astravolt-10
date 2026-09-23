@@ -3656,7 +3656,16 @@ startNativeGoogleLogin().then(ok=>{
 if(!ok) showToast("Sign-in cancelled");
 }).catch(err=>{
 console.error("Native Google sign-in failed:",err);
-showToast("Sign-in cancelled");
+let msg=(err&&(err.message||err.errorMessage||err.code)||"").toString();
+if(/cancel/i.test(msg)){ showToast("Sign-in cancelled"); return; }
+/* DEVELOPER_ERROR / 10 = this APK's signing SHA-1 + package name are not
+   registered on the Google OAuth Android client, so Google refuses to open
+   the account picker. Tell the player what is actually wrong. */
+if(/10\b|developer_error|audience|client/i.test(msg)){
+showToast("Google sign-in isn't set up for this build yet","#ef4444");
+}else{
+showToast("Sign-in failed: "+(msg||"unknown error"),"#ef4444");
+}
 });
 
 return;
