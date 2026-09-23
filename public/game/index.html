@@ -10346,12 +10346,20 @@ ctx.save();
 ctx.shadowColor=b.c;
 ctx.shadowBlur=9;
 
+if(FX.grad){
+
 let bg=ctx.createLinearGradient(b.x,b.y,b.x+b.w,b.y+b.h);
 bg.addColorStop(0,"#ffffff");
 bg.addColorStop(0.5,b.c);
 bg.addColorStop(1,b.c);
 
 ctx.fillStyle=bg;
+
+}else{
+
+ctx.fillStyle=b.c;
+
+}
 
 ctx.fillRect(
 b.x,
