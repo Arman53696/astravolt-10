@@ -7976,7 +7976,7 @@ window.Ads.showRewarded("DOUBLE CREDITS").then(function(ok){
 
 if(btn) btn.style.opacity="1";
 
-if(!ok) return;
+if(!ok){ showAdFailToast(); return; }
 
 adDoubleUsed=true;
 coins+=bonus;
