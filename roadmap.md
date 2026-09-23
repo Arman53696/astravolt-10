@@ -24,3 +24,5 @@
 - [x] Keep every home-screen option visible inside the usable mobile viewport.
 - [x] Refresh cached browser game pages while retaining offline fallback.
 - [x] Update-available banner on home screen: game checks Firebase RTDB `meta/latestVersion` (4s timeout, silent offline) and shows a NEW banner linking to Play Store when versionCode is higher; current v1.0.1 (code 1).
+
+- [x] Performance: adaptive graphics quality (auto glow/particle/3D scaling) for low-RAM phones
