@@ -7932,6 +7932,25 @@ if(label) label.innerText="REVIVE · WATCH AD (FREE)";
 }
 
 
+/* explains why a rewarded ad could not be shown instead of failing silently */
+function showAdFailToast(){
+
+let err="";
+try{ err=(window.Ads&&window.Ads.lastError&&window.Ads.lastError())||""; }catch(e){}
+
+let msg="No ad available right now — try again later";
+let low=String(err).toLowerCase();
+
+if(!window.Ads||!window.Ads.isNative||!window.Ads.isNative()) msg="Real ads only work in the Android app";
+else if(low.indexOf("no fill")>=0||low.indexOf("no ad")>=0||low.indexOf("3")===0) msg="No ad available right now — try again in a while";
+else if(low.indexOf("network")>=0) msg="Ad failed — check your internet connection";
+else if(low.indexOf("2")===0) msg="Ad failed — check your internet connection";
+
+try{ showToast(msg,"#fbbf24"); }catch(e){}
+
+}
+
+
 function adRevive(){
 
 if(adsOff()) return;
