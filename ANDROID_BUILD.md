@@ -38,13 +38,35 @@ add a `signingConfig` in `android/app/build.gradle` with your keystore.
 
 ## Google Play Console setup (required for purchases)
 1. Create the app with package name `app.nexora.astravolt` and upload a
-   signed AAB to internal testing at least once.
-2. Monetize → Products → In-app products: create **managed (consumable)**
-   products with exactly these IDs and set your prices:
-   `coins_50, coins_100, coins_200, coins_300, coins_400, coins_500,
-   coins_600, coins_700, coins_800, coins_900, coins_1000`
-3. Add license testers so you can test purchases without being charged.
-4. Prices shown in the shop come from Play automatically once live.
+   signed AAB to **internal testing**, then install the game from that Play
+   test link. A sideloaded APK can never buy anything — Play only sells to
+   builds it delivered itself, signed with the same key.
+2. Monetize → Products → In-app products: create products with exactly these
+   IDs, set a price for each, and **activate** them:
+   - consumable (coins): `coin_450, coin_900, coin_915, coin_1455, coin_1815,
+     coin_2025, coin_2715, coin_3615, coin_3795, coin_4140, coin_4230,
+     coin_4335, coin_4485, coin_4515, coin_4875, coin_4950, coin_5415,
+     coin_7215, coin_9045, coin_9465, coin_18045, coin_22545, coin_27045,
+     coin_36045, coin_45015, coin_90900`
+   - non-consumable (remove ads): `ad_4`
+3. Add license testers (Play Console → Setup → License testing) so purchases
+   are free for you.
+4. Prices shown in the shop come from Play automatically once the products are
+   active. Until then the shop shows "isn't available on your Google Play
+   account yet".
+
+## Google Sign-In setup (required for login in the APK)
+Login shows "sign-in failed" with no account picker when the signing key of
+the installed APK isn't registered:
+1. `cd android && ./gradlew signingReport` → copy the **SHA1** of the config
+   you actually ship with (release key, not debug).
+2. Firebase console → Project settings → your Android app
+   (`app.nexora.astravolt`) → Add fingerprint → paste that SHA1.
+3. Play Console → Setup → App signing → copy the **App signing key SHA-1**
+   and add that fingerprint too (Play re-signs your AAB, so this is the key
+   users actually get).
+4. Download the refreshed `google-services.json` into `android/app/` if you
+   use one, then rebuild. Fingerprint changes can take a few minutes.
 
 ## Notes
 - Purchases are granted on-device. For fraud protection, verify purchase
