@@ -3808,6 +3808,100 @@ clearInterval(waitForGsi);
 const canvas=document.getElementById("gameCanvas");
 const ctx=canvas.getContext("2d");
 
+/* =========================
+   ADAPTIVE GRAPHICS QUALITY
+   Canvas glow (shadowBlur), CSS-style filters and per-particle
+   gradients are by far the most expensive thing this game does on
+   a phone GPU. Weaker devices silently drop those passes so the
+   gameplay stays at a steady framerate instead of stuttering.
+   tier 2 = full effects, 1 = reduced glow, 0 = no glow at all.
+========================= */
+const FX={tier:2,glow:1,maxParticles:260,burst:1,dpr:1.25,grad:true};
+
+function applyFXTier(t){
+
+FX.tier=t;
+FX.glow=t>=2?1:(t===1?0.5:0);
+FX.maxParticles=t>=2?260:(t===1?150:80);
+FX.burst=t>=2?1:(t===1?0.6:0.35);
+FX.dpr=t>=2?1.25:1;
+FX.grad=t>=2;
+
+window.__astraFX=FX;
+
+if(window.__astra3dQuality) window.__astra3dQuality();
+
+}
+
+(function detectFXTier(){
+
+let mem=navigator.deviceMemory||0;
+let cores=navigator.hardwareConcurrency||0;
+
+let t=2;
+
+if((mem&&mem<=4)||(cores&&cores<=4)) t=1;
+if((mem&&mem<=2)||(cores&&cores<=2)) t=0;
+
+applyFXTier(t);
+
+})();
+
+/* one place to honour the quality tier: every ctx.shadowBlur /
+   ctx.filter assignment in the render code is scaled down (or
+   switched off) here, so no draw routine has to know about it */
+(function patchCtxQuality(){
+
+let proto=CanvasRenderingContext2D.prototype;
+let sb=Object.getOwnPropertyDescriptor(proto,"shadowBlur");
+let flt=Object.getOwnPropertyDescriptor(proto,"filter");
+
+if(sb&&sb.set) Object.defineProperty(ctx,"shadowBlur",{
+configurable:true,
+get(){ return sb.get.call(this); },
+set(v){ sb.set.call(this,FX.glow?v*FX.glow:0); }
+});
+
+if(flt&&flt.set) Object.defineProperty(ctx,"filter",{
+configurable:true,
+get(){ return flt.get.call(this); },
+set(v){ flt.set.call(this,FX.tier>=2?v:"none"); }
+});
+
+})();
+
+/* pre-rendered soft glow sprites: drawing a cached bitmap is an
+   order of magnitude cheaper than building a radial gradient for
+   every spark of every explosion, every frame */
+const __glowSprites=new Map();
+
+function glowSprite(color){
+
+let cached=__glowSprites.get(color);
+
+if(cached) return cached;
+
+let R=32;
+let c=document.createElement("canvas");
+c.width=c.height=R*2;
+
+let g=c.getContext("2d");
+let gr=g.createRadialGradient(R,R,0,R,R,R);
+gr.addColorStop(0,"#ffffff");
+gr.addColorStop(0.35,color);
+gr.addColorStop(1,"rgba(0,0,0,0)");
+
+g.fillStyle=gr;
+g.beginPath();
+g.arc(R,R,R,0,Math.PI*2);
+g.fill();
+
+__glowSprites.set(color,c);
+
+return c;
+
+}
+
 function getAppViewport(){
 
 const viewport=window.visualViewport;
