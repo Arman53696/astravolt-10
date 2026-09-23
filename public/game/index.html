@@ -10519,21 +10519,13 @@ let alpha=p.life/p.maxLife;
 
 if(p.flash){
 
-/* punchy instant flash - fades fast, no glow cost since it's brief */
+/* punchy instant flash - fades fast, drawn from a cached sprite */
 ctx.globalAlpha=alpha*alpha;
 
-let fr=p.size*(1.3-alpha*0.3);
+let fr=Math.max(p.size*(1.3-alpha*0.3),0.1);
+let spr=glowSprite("#ffffff");
 
-let fgrad=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,Math.max(fr,0.1));
-fgrad.addColorStop(0,"#ffffff");
-fgrad.addColorStop(0.5,"rgba(255,255,255,.5)");
-fgrad.addColorStop(1,"rgba(255,255,255,0)");
-
-ctx.fillStyle=fgrad;
-
-ctx.beginPath();
-ctx.arc(p.x,p.y,fr,0,Math.PI*2);
-ctx.fill();
+ctx.drawImage(spr,p.x-fr,p.y-fr,fr*2,fr*2);
 
 return;
 
@@ -10568,29 +10560,12 @@ return;
 
 }
 
-ctx.shadowColor=p.color;
-ctx.shadowBlur=p.bright?10:6;
+/* sparks: cached glow sprite instead of a fresh radial gradient
+   plus a blur pass for every single particle every frame */
+let pr=Math.max(p.size*alpha,0.1)*(p.bright?1.6:1.35);
+let spr=glowSprite(p.color);
 
-let pr=p.size*alpha;
-
-let pgrad=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,Math.max(pr,0.1));
-pgrad.addColorStop(0,"#ffffff");
-pgrad.addColorStop(0.4,p.color);
-pgrad.addColorStop(1,p.color);
-
-ctx.fillStyle=pgrad;
-
-ctx.beginPath();
-
-ctx.arc(
-p.x,
-p.y,
-pr,
-0,
-Math.PI*2
-);
-
-ctx.fill();
+ctx.drawImage(spr,p.x-pr,p.y-pr,pr*2,pr*2);
 
 });
 
