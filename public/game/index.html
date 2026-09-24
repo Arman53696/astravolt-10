@@ -3637,7 +3637,7 @@ await SL.initialize({google:{webClientId:GOOGLE_CLIENT_ID,mode:"online"}});
 nativeGoogleReady=true;
 }
 
-let res=await SL.login({provider:"google",options:{scopes:["email","profile"]}});
+let res=await SL.login({provider:"google",options:{}});
 let r=(res&&res.result)||{};
 let token=r.accessToken&&r.accessToken.token;
 
