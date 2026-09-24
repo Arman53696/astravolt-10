@@ -3638,13 +3638,15 @@ nativeGoogleReady=true;
 }
 
 let res=await SL.login({provider:"google",options:{}});
-let r=(res&&res.result)||{};
-let token=r.accessToken&&r.accessToken.token;
+let r=(res&&res.result)||res||{};
+let token=(r.accessToken&&(r.accessToken.token||r.accessToken))||null;
+let idTok=r.idToken||(r.credential&&r.credential.idToken)||null;
 
-if(token){ await fetchGoogleProfile(token); return true; }
-if(r.idToken){ handleGoogleSignIn({credential:r.idToken}); return true; }
+if(idTok&&typeof idTok==="string"){ handleGoogleSignIn({credential:idTok}); return true; }
+if(token&&typeof token==="string"){ await fetchGoogleProfile(token); return true; }
 
-return false;
+console.warn("Native Google sign-in: no token in result",JSON.stringify(res));
+throw new Error("no_token");
 
 }
 
