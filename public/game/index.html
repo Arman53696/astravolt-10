@@ -3659,6 +3659,8 @@ if(!ok) showToast("Sign-in cancelled");
 }).catch(err=>{
 console.error("Native Google sign-in failed:",err);
 let msg=(err&&(err.message||err.errorMessage||err.code)||"").toString();
+if(/no_token/.test(msg)){ showToast("Google didn't return an account — check SHA-1 setup","#ef4444"); return; }
+if(/reauth|\b16\b/i.test(msg)){ showToast("Google sign-in isn't set up for this build yet (SHA-1)","#ef4444"); return; }
 if(/cancel/i.test(msg)){ showToast("Sign-in cancelled"); return; }
 /* DEVELOPER_ERROR / 10 = this APK's signing SHA-1 + package name are not
    registered on the Google OAuth Android client, so Google refuses to open
