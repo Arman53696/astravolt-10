@@ -8350,16 +8350,45 @@ keysDown={};
 });
 
 
-/* auto-pause if the tab/app is backgrounded mid-match */
+/* auto-pause if the tab/app is backgrounded mid-match, and silence all
+   audio so nothing keeps playing while the app is minimized */
+function suspendGameAudio(){
+try{ if(audioCtx && audioCtx.state==="running") audioCtx.suspend(); }catch(e){}
+}
+function resumeGameAudio(){
+try{ if(audioCtx && audioCtx.state==="suspended" && soundOn) audioCtx.resume(); }catch(e){}
+}
+
 document.addEventListener("visibilitychange",()=>{
 
-if(document.hidden && isPlaying && !isPaused){
+if(document.hidden){
 
-togglePause();
+if(isPlaying && !isPaused) togglePause();
+suspendGameAudio();
+
+}else{
+
+resumeGameAudio();
 
 }
 
 });
+
+window.addEventListener("pagehide",suspendGameAudio);
+window.addEventListener("blur",suspendGameAudio);
+window.addEventListener("focus",resumeGameAudio);
+
+/* Capacitor native app state (Android home / recents / app switch) */
+try{
+const CapApp=window.Capacitor?.Plugins?.App;
+if(CapApp&&CapApp.addListener){
+CapApp.addListener("appStateChange",({isActive})=>{
+if(isActive){ resumeGameAudio(); }
+else{ if(isPlaying && !isPaused) togglePause(); suspendGameAudio(); }
+});
+}
+}catch(e){}
+
 
 
 /* =========================
