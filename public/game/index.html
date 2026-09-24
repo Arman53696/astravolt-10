@@ -8331,8 +8331,11 @@ window.addEventListener("keydown",e=>{
     if(isShown("settingsSheet")){ closeSettings(); return; }
     if(isShown("shopSheet")){ closeShop(); return; }
     if(isShown("levelModal")){ closeLevelSelect(); return; }
-    if(isShown("pauseModal")){ showQuitConfirm(); return; }
-    if(typeof isPlaying!=="undefined" && isPlaying){ showQuitConfirm(); return; }
+    /* paused -> back goes straight to the home screen */
+    if(isShown("pauseModal")){ confirmQuit(); return; }
+    /* playing -> back just pauses the match */
+    if(typeof isPlaying!=="undefined" && isPlaying){ if(!isPaused) togglePause(); return; }
+    /* home screen -> back leaves the app */
     App.minimizeApp?.();
   });
 })();
