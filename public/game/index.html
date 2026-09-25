@@ -5833,7 +5833,7 @@ waveTotal=wavesForLevel(level);
 waveKills=0;
 waveBp=blueprintFor(level,w);
 waveNeed=waveQuota(level,w);
-if(w===1) bossRound=0;
+if(w===1){ bossRound=0; resetBattleSkills(); renderSkillBar(); playerMaxHp=maxHealth(); }
 if(w>1) refillPlayerHp();
 updateLevelDisplay();
 try{ addFloatText(W/2,H*0.26,waveBp.name,"#7ce7ff",20); }catch(e){}
@@ -5849,6 +5849,8 @@ if(boss||bossSpawnTimer>0) return;
 waveKills++;
 if(waveKills<waveNeed) return;
 if(wave<waveTotal){
+if(!registerWaveKill._pick){ registerWaveKill._pick=true; waveKills--; showBattleSkills(()=>{ registerWaveKill._pick=false; waveKills=waveNeed; startWave(wave+1); addFloatText(W/2,H*0.32,"WAVE "+wave+" / "+waveTotal,"#2ff3ff",26); }); }
+return;
 startWave(wave+1);
 addFloatText(W/2,H*0.32,"WAVE "+wave+" / "+waveTotal,"#2ff3ff",26);
 playLevelUp();
@@ -5917,7 +5919,51 @@ function gunPurple(){ return gunLevel()>=7; }
 function gunDamageMult(){ let g=gunLevel(); return g>=10?4:(g>=7?2:1); }
 function playerBulletDamage(){
 /* slightly stronger baseline while keeping the level curve gradual */
-return (2+Math.floor(level/5))*gunDamageMult();
+let d=(2+Math.floor(level/5))*gunDamageMult()*BS.dmg;
+if(Math.random()<BS.crit){ d*=BS.critDmg; }
+return d;
+}
+/* ---- BATTLE SKILLS: temporary in-level upgrades, reset every level ---- */
+let BS;
+function resetBattleSkills(){ BS={dmg:1,rate:1,proj:0,crit:0.05,critDmg:1.5,dmgRed:0,hp:1,life:0,size:1,speed:1,pierce:0,picks:{},total:0}; }
+resetBattleSkills();
+const BATTLE_SKILLS=[
+{id:"attack",name:"Attack Enhance",c:"#ef4444",max:5,apply:()=>BS.dmg+=0.3},
+{id:"dmgboost",name:"Damage Boost",c:"#ef4444",max:5,apply:()=>BS.dmg+=0.2},
+{id:"attackrate",name:"Attack Rate Enhance",c:"#38bdf8",max:5,apply:()=>BS.rate+=0.2},
+{id:"rapid",name:"Rapid Fire",c:"#38bdf8",max:3,apply:()=>BS.rate+=0.4},
+{id:"proj1",name:"+1 Projectile",c:"#38bdf8",max:4,apply:()=>BS.proj+=1},
+{id:"proj2",name:"+2 Projectile",c:"#ef4444",max:2,apply:()=>BS.proj+=2},
+{id:"crit",name:"Crit Enhance",c:"#ef4444",max:5,apply:()=>BS.crit+=0.1},
+{id:"critdmg",name:"Crit Damage",c:"#ef4444",max:5,apply:()=>BS.critDmg+=0.25},
+{id:"dmgred",name:"Damage Reduction",c:"#f59e0b",max:4,apply:()=>BS.dmgRed=Math.min(0.6,BS.dmgRed+0.15)},
+{id:"hp",name:"HP Enhance",c:"#22c55e",max:5,apply:()=>{BS.hp+=0.1; playerMaxHp=maxHealth(); playerHp=Math.min(playerMaxHp,playerHp+playerMaxHp*0.1); syncHealthHud();}},
+{id:"lifesteal",name:"Life Steal",c:"#22c55e",max:3,apply:()=>BS.life+=0.03},
+{id:"projsize",name:"Projectile Size",c:"#38bdf8",max:3,apply:()=>BS.size+=0.25},
+{id:"projspeed",name:"Projectile Speed",c:"#38bdf8",max:3,apply:()=>BS.speed+=0.25},
+{id:"pierce",name:"Piercing Bullet",c:"#f59e0b",max:3,apply:()=>BS.pierce+=1},
+{id:"heal",name:"Health Restore",c:"#22c55e",max:99,apply:()=>{playerHp=playerMaxHp; syncHealthHud();}}
+];
+function showBattleSkills(done){
+const pool=BATTLE_SKILLS.filter(k=>(BS.picks[k.id]||0)<k.max);
+for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+const pick=pool.slice(0,3); if(!pick.length){done();return;}
+const m=document.getElementById("battleSkillModal");
+m.querySelector(".bs-lv").textContent="Lv."+(BS.total+1)+" in this battle!";
+const row=m.querySelector(".bs-cards"); row.innerHTML="";
+pick.forEach(k=>{
+ const lv=BS.picks[k.id]||0, stars=Math.min(k.max,5);
+ const card=document.createElement("button"); card.className="bs-card"; card.style.setProperty("--c",k.c);
+ card.innerHTML='<div class="bs-name">'+k.name+'</div><img src="icons/skills/'+k.id+'.png" alt=""><div class="bs-stars">'+
+  Array.from({length:stars},(_,i)=>'<span class="'+(i<=lv?"on":"")+'">★</span>').join("")+'</div>';
+ card.onclick=()=>{ k.apply(); BS.picks[k.id]=lv+1; BS.total++; m.style.display="none"; isPaused=false; renderSkillBar(); try{syncBackgroundMusic();}catch(e){} done(); };
+ row.appendChild(card);
+});
+isPaused=true; m.style.display="flex";
+}
+function renderSkillBar(){
+const bar=document.getElementById("battleSkillBar"); if(!bar) return;
+bar.innerHTML=Object.keys(BS.picks).map(id=>'<img src="icons/skills/'+id+'.png" alt="">').join("");
 }
 
 /* reference boss artwork — one sprite per boss, drawn instead of the
@@ -6046,7 +6092,7 @@ let shieldTime=0;
 const SKIN_HP={nova:80,inferno:85,valkyr:95,shadow:105,void:115,orion:125};
 
 function maxHealth(){
-return (SKIN_HP[equippedSkin]||80)+(upgrades.health||0)*10;
+return Math.round(((SKIN_HP[equippedSkin]||80)+(upgrades.health||0)*10)*(BS?BS.hp:1));
 }
 function shieldDuration(){
 return Math.round(Math.min(15,6+(upgrades.shieldTime||0)*1.8)*60);
@@ -6072,7 +6118,7 @@ syncHealthHud();
 }
 function damagePlayer(dmg){
 if(shieldTime>0||reviveInvincible>0) return false;
-playerHp-=dmg;
+playerHp-=dmg*(1-BS.dmgRed);
 reviveInvincible=45;
 if(shakeOn) shakeTime=16;
 playPlayerHit();
@@ -8168,6 +8214,7 @@ startMatch(lastClearedLevel);
 function togglePause(){
 
 if(!isPlaying) return;
+if(document.getElementById("battleSkillModal")?.style.display==="flex") return;
 
 isPaused=!isPaused;
 
@@ -9511,12 +9558,14 @@ let rate=
 slowTime>0
 ?26
 :Math.max(3,Math.round(13/(hasDouble?fireMultiplier():1)/(hasSpeed?1.2:1))-shipPerk().fire);
+rate=Math.max(3,Math.round(rate/BS.rate));
 
 
 if(shootTick%rate===0){
 
 let bw=(hasDamage||gunPurple())?6:4;
 let bh=(hasDamage||gunPurple())?16:12;
+bw=Math.round(bw*BS.size); bh=Math.round(bh*BS.size);
 
 playShoot();
 
@@ -9534,7 +9583,7 @@ y:player.y+10,
 w:bw,
 h:bh,
 c:col,
-pierce:upgrades.piercing
+pierce:(upgrades.piercing||0)+BS.pierce
 });
 
 bullets.push({
@@ -9543,7 +9592,7 @@ y:player.y+10,
 w:bw,
 h:bh,
 c:col,
-pierce:upgrades.piercing
+pierce:(upgrades.piercing||0)+BS.pierce
 });
 
 }else{
@@ -9555,10 +9604,14 @@ y:player.y,
 w:bw,
 h:bh,
 c:col,
-pierce:upgrades.piercing
+pierce:(upgrades.piercing||0)+BS.pierce
 
 });
 
+}
+for(let k=1;k<=BS.proj;k++){
+ let side=(k%2?1:-1)*Math.ceil(k/2);
+ bullets.push({x:player.x+player.w/2-bw/2+side*10,y:player.y+8,w:bw,h:bh,c:col,pierce:(upgrades.piercing||0)+BS.pierce,vx:side*0.9});
 }
 
 }
@@ -9570,7 +9623,7 @@ for(let i=bullets.length-1;i>=0;i--){
 
 let b=bullets[i];
 
-b.y-=9;
+b.y-=9*BS.speed; if(b.vx) b.x+=b.vx;
 
 if(b.y<-20){
 
@@ -9800,6 +9853,7 @@ if(e.shield>0){
 
 e.hp-=dmg;
 e.hitFlash=5;
+if(BS.life>0 && Math.random()<BS.life){ playerHp=Math.min(playerMaxHp,playerHp+1); syncHealthHud(); }
 
 if(e.hp>0){
 
@@ -11084,5 +11138,20 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 </script>
 
 
+<div id="battleSkillModal"><div class="bs-title">Battle Skills</div><div class="bs-lv"></div><div class="bs-cards"></div><div class="bs-hint">Choose Your Battle Skill</div></div>
+<div id="battleSkillBar"></div>
+<style>
+#battleSkillModal{position:fixed;inset:0;z-index:9000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,8,20,.82);font-family:inherit}
+.bs-title{color:#fff;font-size:30px;font-weight:800;letter-spacing:1px}
+.bs-lv{color:#fbbf24;font-size:20px;font-weight:700}
+.bs-cards{display:flex;gap:8px;padding:0 8px;width:100%;max-width:460px}
+.bs-card{flex:1;background:#1e2640;border:2px solid var(--c);border-radius:6px;padding:0 0 8px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+.bs-name{width:100%;background:var(--c);font-size:12px;font-weight:700;padding:6px 2px;min-height:34px;display:flex;align-items:center;justify-content:center}
+.bs-card img{width:78%;height:auto}
+.bs-stars span{color:#334;font-size:16px}.bs-stars span.on{color:#fbbf24}
+.bs-hint{color:#fcd34d;font-size:16px;margin-top:10px}
+#battleSkillBar{position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 110px);z-index:50;display:flex;flex-direction:column;gap:3px;pointer-events:none}
+#battleSkillBar img{width:24px;height:24px}
+</style>
 </body>
 </html>
