@@ -5860,6 +5860,7 @@ addFloatText(W/2,H*0.32,"WARNING: BOSS INCOMING","#ff4d69",24);
 doVibrate([25,20,25]);
 try{ loadBossSprite(BOSS_DEFS[((level-1)%BOSS_DEFS.length+BOSS_DEFS.length)%BOSS_DEFS.length].img); }catch(e){}
 bossSpawnTimer=90;
+refillPlayerHp();
 }else{
 /* no boss on this level - clear it straight away */
 if(level+1>maxLevelUnlocked){ maxLevelUnlocked=level+1; saveData(); }
@@ -10049,6 +10050,7 @@ bossSpawnTimer=0;
 if(clearedLevel+1>maxLevelUnlocked){ maxLevelUnlocked=clearedLevel+1; saveData(); }
 playLevelUp();
 showLevelComplete(clearedLevel);
+}
 
 }
 
