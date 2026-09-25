@@ -5806,15 +5806,15 @@ let waveBp=WAVE_BLUEPRINTS[0];
 function levelSpeedScale(){ return 1+Math.min(level,30)*0.018; }
 function levelDamageScale(){ return 1+Math.min(level,30)*0.05; }
 
+/* levels 1-30: 2 waves, 31+: 3 waves. last wave always ends with a boss */
 function wavesForLevel(lvl){
-if(lvl<=1) return 1;
-if(lvl===2) return 2;
-/* deterministic pseudo random from the level number */
-let h=(lvl*2654435761)%4294967296;
-h=(h^(h>>>13))>>>0;
-let minW=lvl<5?1:(lvl<10?2:3);
-let maxW=lvl<5?3:(lvl<10?5:6);
-return minW+(h%(maxW-minW+1));
+return lvl<=30?2:3;
+}
+/* every 10th level has 2 boss fights back to back */
+function bossRoundsForLevel(lvl){ return (lvl%10===0)?2:1; }
+let bossRound=0;
+function refillPlayerHp(){
+try{ playerMaxHp=maxHealth(); playerHp=playerMaxHp; syncHealthHud(); }catch(e){}
 }
 
 function waveQuota(lvl,w){
@@ -5833,6 +5833,8 @@ waveTotal=wavesForLevel(level);
 waveKills=0;
 waveBp=blueprintFor(level,w);
 waveNeed=waveQuota(level,w);
+if(w===1) bossRound=0;
+if(w>1) refillPlayerHp();
 updateLevelDisplay();
 try{ addFloatText(W/2,H*0.26,waveBp.name,"#7ce7ff",20); }catch(e){}
 }
@@ -5852,12 +5854,13 @@ addFloatText(W/2,H*0.32,"WAVE "+wave+" / "+waveTotal,"#2ff3ff",26);
 playLevelUp();
 doVibrate(18);
 }else{
-if(isBossLevel(level)){
+if(true){
 /* last wave cleared on a boss level - the boss arrives */
 addFloatText(W/2,H*0.32,"WARNING: BOSS INCOMING","#ff4d69",24);
 doVibrate([25,20,25]);
 try{ loadBossSprite(BOSS_DEFS[((level-1)%BOSS_DEFS.length+BOSS_DEFS.length)%BOSS_DEFS.length].img); }catch(e){}
 bossSpawnTimer=90;
+refillPlayerHp();
 }else{
 /* no boss on this level - clear it straight away */
 if(level+1>maxLevelUnlocked){ maxLevelUnlocked=level+1; saveData(); }
@@ -5940,9 +5943,10 @@ let cap=Math.min(lvl,20);
 let barCount=bossBarCount(lvl);
 /* first boss (level 10) = 1000 hp; every next boss doubles, and each
    level past the first boss makes the fight meaningfully harder */
-let bIdx=bossIndexForLevel(lvl);
-let lvlScale=1+Math.max(0,lvl-10)*0.12;
-let hp=Math.round(1000*Math.pow(2,bIdx)*lvlScale);
+let bIdx=Math.floor((lvl-1)/5);
+/* every level has a boss now - hp grows steeply with the level,
+   the second boss on a x10 level is even tougher */
+let hp=Math.round((900+700*Math.pow(lvl,1.18))*(bossRound>=1?1.35:1));
 let barHp=Math.round(hp/barCount);
 hp=barHp*barCount;
 let r=46+cap*2.6;
@@ -5968,7 +5972,7 @@ attacks:(def.attacks&&def.attacks.length)?def.attacks.slice():[def.pattern],
 attackIndex:0,
 volley:0,
 dir:Math.random()<0.5?-1:1,
-speed:1.25+lvl*0.2+bIdx*0.35,
+speed:Math.min(7,1.6+lvl*0.09+bIdx*0.15),
 phase:Math.random()*100,
 phaseIndex:1,
 fireTimer:65,
@@ -10028,6 +10032,14 @@ saveData();
 }
 
 let clearedLevel=boss.level;
+if(bossRound+1<bossRoundsForLevel(clearedLevel)){
+bossRound++;
+boss=null; bossBullets=[];
+refillPlayerHp();
+addFloatText(W/2,H*0.32,"WARNING: SECOND BOSS INCOMING","#ff4d69",24);
+try{ loadBossSprite(BOSS_DEFS[(clearedLevel%BOSS_DEFS.length)].img); }catch(e){}
+bossSpawnTimer=110;
+}else{
 
 showToast("💥 Level "+clearedLevel+" cleared! +"+gained,"#10b981");
 
@@ -10038,6 +10050,7 @@ bossSpawnTimer=0;
 if(clearedLevel+1>maxLevelUnlocked){ maxLevelUnlocked=clearedLevel+1; saveData(); }
 playLevelUp();
 showLevelComplete(clearedLevel);
+}
 
 }
 
