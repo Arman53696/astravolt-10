@@ -5925,15 +5925,20 @@ return d;
 }
 /* ---- BATTLE SKILLS: temporary in-level upgrades, reset every level ---- */
 let BS;
-function resetBattleSkills(){ BS={dmg:1,rate:1,proj:0,crit:0.05,critDmg:1.5,dmgRed:0,hp:1,life:0,size:1,speed:1,pierce:0,picks:{},total:0}; }
+function resetBattleSkills(){ BS={dmg:1,rate:1,proj:0,crit:0.05,critDmg:1.5,dmgRed:0,hp:1,life:0,size:1,speed:1,pierce:0,homing:0,boom:0,chain:0,picks:{},total:0}; }
 resetBattleSkills();
+function weaponEvolve(){
+ const names={1:"TWIN SHOT",2:"TRIPLE SHOT",4:"PENTA SHOT",5:"SPREAD CANNON"};
+ let n=names[BS.proj]; if(BS.proj>=5&&BS.pierce>0) n="PIERCING SPREAD";
+ if(n) try{ addFloatText(W/2,H*0.4,"WEAPON EVOLVED: "+n,"#38bdf8",20); }catch(e){}
+}
 const BATTLE_SKILLS=[
 {id:"attack",name:"Attack Enhance",c:"#ef4444",max:5,apply:()=>BS.dmg+=0.3},
 {id:"dmgboost",name:"Damage Boost",c:"#ef4444",max:5,apply:()=>BS.dmg+=0.2},
 {id:"attackrate",name:"Attack Rate Enhance",c:"#38bdf8",max:5,apply:()=>BS.rate+=0.2},
 {id:"rapid",name:"Rapid Fire",c:"#38bdf8",max:3,apply:()=>BS.rate+=0.4},
-{id:"proj1",name:"+1 Projectile",c:"#38bdf8",max:4,apply:()=>BS.proj+=1},
-{id:"proj2",name:"+2 Projectile",c:"#ef4444",max:2,apply:()=>BS.proj+=2},
+{id:"proj1",name:"+1 Projectile",c:"#38bdf8",max:4,apply:()=>{BS.proj=Math.min(6,BS.proj+(BS.proj===2?2:1)); weaponEvolve();}},
+{id:"proj2",name:"+2 Projectile",c:"#ef4444",max:2,apply:()=>{BS.proj=Math.min(6,BS.proj+2); weaponEvolve();}},
 {id:"crit",name:"Crit Enhance",c:"#ef4444",max:5,apply:()=>BS.crit+=0.1},
 {id:"critdmg",name:"Crit Damage",c:"#ef4444",max:5,apply:()=>BS.critDmg+=0.25},
 {id:"dmgred",name:"Damage Reduction",c:"#f59e0b",max:4,apply:()=>BS.dmgRed=Math.min(0.6,BS.dmgRed+0.15)},
@@ -5941,7 +5946,10 @@ const BATTLE_SKILLS=[
 {id:"lifesteal",name:"Life Steal",c:"#22c55e",max:3,apply:()=>BS.life+=0.03},
 {id:"projsize",name:"Projectile Size",c:"#38bdf8",max:3,apply:()=>BS.size+=0.25},
 {id:"projspeed",name:"Projectile Speed",c:"#38bdf8",max:3,apply:()=>BS.speed+=0.25},
-{id:"pierce",name:"Piercing Bullet",c:"#f59e0b",max:3,apply:()=>BS.pierce+=1},
+{id:"pierce",name:"Piercing Bullet",c:"#f59e0b",max:3,apply:()=>{BS.pierce+=1; if(BS.proj>=5) weaponEvolve();}},
+{id:"homing",name:"Homing Bullet",c:"#a855f7",max:3,apply:()=>{BS.homing+=1; try{addFloatText(W/2,H*0.4,"WEAPON EVOLVED: HOMING","#a855f7",20);}catch(e){}}},
+{id:"explosive",name:"Explosive Bullet",c:"#f97316",max:3,apply:()=>BS.boom+=1},
+{id:"chain",name:"Chain Lightning",c:"#7dd3fc",max:3,apply:()=>BS.chain+=1},
 {id:"heal",name:"Health Restore",c:"#22c55e",max:99,apply:()=>{playerHp=playerMaxHp; syncHealthHud();}}
 ];
 function showBattleSkills(done){
@@ -9557,11 +9565,12 @@ shootTick++;
 let rate=
 slowTime>0
 ?26
-:Math.max(3,Math.round(13/(hasDouble?fireMultiplier():1)/(hasSpeed?1.2:1))-shipPerk().fire);
+:Math.max(3,Math.round(15/(hasDouble?fireMultiplier():1)/(hasSpeed?1.2:1))-shipPerk().fire);
 rate=Math.max(3,Math.round(rate/BS.rate));
 
 
 if(shootTick%rate===0){
+let n0=bullets.length;
 
 let bw=(hasDamage||gunPurple())?6:4;
 let bh=(hasDamage||gunPurple())?16:12;
@@ -9609,10 +9618,13 @@ pierce:(upgrades.piercing||0)+BS.pierce
 });
 
 }
+/* weapon evolution: 1 -> 2 -> 3 -> 5 shots, then a wide spread fan */
+let spreadV=BS.proj>=5?1.8:(BS.proj>=4?1.2:0.9);
 for(let k=1;k<=BS.proj;k++){
  let side=(k%2?1:-1)*Math.ceil(k/2);
- bullets.push({x:player.x+player.w/2-bw/2+side*10,y:player.y+8,w:bw,h:bh,c:col,pierce:(upgrades.piercing||0)+BS.pierce,vx:side*0.9});
+ bullets.push({x:player.x+player.w/2-bw/2+side*10,y:player.y+8,w:bw,h:bh,c:col,pierce:(upgrades.piercing||0)+BS.pierce,vx:side*spreadV});
 }
+for(let k=n0;k<bullets.length;k++){ let nb=bullets[k]; if(BS.homing) nb.homing=BS.homing; if(BS.boom) nb.boom=BS.boom; if(BS.chain) nb.chain=BS.chain; }
 
 }
 
@@ -9623,6 +9635,13 @@ for(let i=bullets.length-1;i>=0;i--){
 
 let b=bullets[i];
 
+if(b.ghost){ if(--b.life<=0) bullets.splice(i,1); continue; }
+if(b.homing){
+ let t=null,best=1e9;
+ for(const o of enemies){ if(o.y>b.y||o.y-o.r<2) continue; let d=Math.abs(o.x-b.x)+(b.y-o.y)*0.5; if(d<best){best=d;t=o;} }
+ if(!t && boss) t=boss;
+ if(t){ b.vx=(b.vx||0)*0.9+Math.max(-4,Math.min(4,(t.x-b.x)*0.04))*0.1*(1+b.homing); }
+}
 b.y-=9*BS.speed; if(b.vx) b.x+=b.vx;
 
 if(b.y<-20){
@@ -9838,7 +9857,7 @@ bullets.splice(j,1);
 
 }
 
-let dmg=playerBulletDamage();
+let dmg=b.dmg||playerBulletDamage();
 
 if(e.shield>0){
  /* shielder: the bubble has to be broken first */
@@ -9854,6 +9873,13 @@ if(e.shield>0){
 e.hp-=dmg;
 e.hitFlash=5;
 if(BS.life>0 && Math.random()<BS.life){ playerHp=Math.min(playerMaxHp,playerHp+1); syncHealthHud(); }
+if(!b.ghost && (b.boom||b.chain)){
+ /* explosive / chain lightning: secondary hits are delivered as invisible
+    one-frame "ghost" bullets so kills go through the normal reward path */
+ let near=enemies.filter(o=>o!==e && o.y-o.r>2).map(o=>({o,d:Math.hypot(o.x-e.x,o.y-e.y)})).sort((a,c)=>a.d-c.d);
+ if(b.boom){ createExplosion(e.x,e.y,"#fb923c"); near.filter(n=>n.d<60+b.boom*15).slice(0,4).forEach(n=>bullets.push({x:n.o.x-1,y:n.o.y-1,w:2,h:2,ghost:true,life:2,pierce:0,dmg:dmg*(0.35+b.boom*0.1)})); }
+ if(b.chain){ near.filter(n=>n.d<140).slice(0,b.chain).forEach(n=>{ createExplosion(n.o.x,n.o.y,"#7dd3fc"); bullets.push({x:n.o.x-1,y:n.o.y-1,w:2,h:2,ghost:true,life:2,pierce:0,dmg:dmg*0.5}); }); }
+}
 
 if(e.hp>0){
 
@@ -10463,6 +10489,7 @@ ctx.shadowBlur=0;
 /* BULLETS */
 
 bullets.forEach(b=>{
+if(b.ghost) return;
 
 ctx.save();
 
