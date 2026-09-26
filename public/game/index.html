@@ -5808,7 +5808,21 @@ function levelDamageScale(){ return 1+Math.min(level,30)*0.05; }
 
 /* levels 1-30: 2 waves, 31+: 3 waves. last wave always ends with a boss */
 function wavesForLevel(lvl){
-return lvl<=30?2:3;
+return lvl<=5?4:lvl<=10?5:lvl<=20?6:lvl<=30?7:lvl<=40?8:9;
+}
+/* which enemies may appear, introduced gradually */
+function allowedEnemies(lvl){
+ let a=["scout","drone","swarmer","miner"];
+ if(lvl>=3) a=a.concat(["turret","orbiter","raider","sentinel"]);
+ if(lvl>=6) a=a.concat(["phantom","cruiser"]);
+ if(lvl>=11) a=a.concat(["bomber","laser","sniper","healer","jammer","teleporter"]);
+ if(lvl>=21) a=a.concat(["shielder","splitter"]);
+ return a;
+}
+function showToughBanner(){
+ let el=document.getElementById("toughBanner"); if(!el) return;
+ el.style.display="flex"; el.classList.remove("go"); void el.offsetWidth; el.classList.add("go");
+ clearTimeout(showToughBanner._t); showToughBanner._t=setTimeout(()=>{el.style.display="none";},2400);
 }
 /* every 10th level has 2 boss fights back to back */
 function bossRoundsForLevel(lvl){ return (lvl%10===0)?2:1; }
@@ -5819,7 +5833,8 @@ try{ playerMaxHp=maxHealth(); playerHp=playerMaxHp; syncHealthHud(); }catch(e){}
 
 function waveQuota(lvl,w){
 let bp=blueprintFor(lvl||1,w||1);
-return Math.max(8,Math.round(bp.quota*(1+Math.min(lvl||1,20)*0.02)));
+let short=Math.max(0.5,3.2/wavesForLevel(lvl||1));
+return Math.max(6,Math.round(bp.quota*(1+Math.min(lvl||1,20)*0.02)*short));
 }
 
 let wave=1;
@@ -5858,7 +5873,7 @@ doVibrate(18);
 }else{
 if(true){
 /* last wave cleared on a boss level - the boss arrives */
-addFloatText(W/2,H*0.32,"WARNING: BOSS INCOMING","#ff4d69",24);
+showToughBanner();
 doVibrate([25,20,25]);
 try{ loadBossSprite(BOSS_DEFS[((level-1)%BOSS_DEFS.length+BOSS_DEFS.length)%BOSS_DEFS.length].img); }catch(e){}
 bossSpawnTimer=90;
@@ -8489,6 +8504,13 @@ const ENEMY_HP_SCALE=0.26;
 
 function pickEnemyType(){
  /* the active wave blueprint decides which ships fly in */
+ {
+  let al=allowedEnemies(level), ids=(waveBp&&waveBp.pool)?al.filter(function(id){return waveBp.pool.indexOf(id)>=0;}):[];
+  if(!ids.length) ids=al;
+  let defs=ENEMY_TYPES.filter(function(t){return ids.indexOf(t.id)>=0;}), wts=defs.map(function(t){return t.tier===0?3:1;}), sum=wts.reduce(function(x,y){return x+y;},0), rr=Math.random()*sum;
+  for(let q=0;q<defs.length;q++){ rr-=wts[q]; if(rr<=0) return defs[q]; }
+  if(defs.length) return defs[0];
+ }
  if(waveBp && waveBp.pool){
   let bpPool=ENEMY_TYPES.filter(function(t){
    return waveBp.pool.indexOf(t.id)>=0 && t.tier<=(level>=6?2:(level>=3?1:0));
@@ -10116,7 +10138,7 @@ if(bossRound+1<bossRoundsForLevel(clearedLevel)){
 bossRound++;
 boss=null; bossBullets=[];
 refillPlayerHp();
-addFloatText(W/2,H*0.32,"WARNING: SECOND BOSS INCOMING","#ff4d69",24);
+showToughBanner();
 try{ loadBossSprite(BOSS_DEFS[(clearedLevel%BOSS_DEFS.length)].img); }catch(e){}
 bossSpawnTimer=110;
 }else{
@@ -11167,6 +11189,8 @@ navigator.serviceWorker.register("./sw.js").catch(()=>{});
 
 <div id="battleSkillModal"><div class="bs-title">Battle Skills</div><div class="bs-lv"></div><div class="bs-cards"></div><div class="bs-hint">Choose Your Battle Skill</div></div>
 <div id="battleSkillBar"></div>
+<div id="toughBanner"><div class="tb-in"><span>⚠</span> Tough Enemy Incoming! <span>⚠</span></div></div>
+<style>#toughBanner{position:fixed;left:0;right:0;top:32%;z-index:60;display:none;justify-content:center;pointer-events:none}#toughBanner .tb-in{width:100%;text-align:center;padding:14px 0;font-weight:900;font-size:24px;letter-spacing:1px;color:#fff;text-shadow:0 0 10px #ff2740,0 2px 0 #7f1020;background:linear-gradient(90deg,transparent,rgba(200,20,40,.85) 20%,rgba(200,20,40,.85) 80%,transparent);border-top:2px solid #ff5a6e;border-bottom:2px solid #ff5a6e}#toughBanner.go .tb-in{animation:tbPulse .6s ease-in-out 4 alternate}@keyframes tbPulse{from{transform:scale(.96);opacity:.75}to{transform:scale(1.04);opacity:1}}</style>
 <style>
 #battleSkillModal{position:fixed;inset:0;z-index:9000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,8,20,.82);font-family:inherit}
 .bs-title{color:#fff;font-size:30px;font-weight:800;letter-spacing:1px}
