@@ -10912,7 +10912,7 @@ initCloudSave();
 
 
 window.__astra3dState=function(){
-  return {playing:isPlaying,paused:isPaused,w:W,h:H,player:{x:player.x,y:player.y,w:player.w,h:player.h},tilt:playerTilt,skin:equippedSkin,boss:boss?{x:boss.x,y:boss.y,level:boss.level,hitFlash:boss.hitFlash}:null};
+  return {playing:isPlaying,paused:isPaused,w:W,h:H,player:{x:player.x,y:player.y,w:player.w,h:player.h},tilt:playerTilt,skin:equippedSkin,boss:boss?{x:boss.x,y:boss.y,level:bossDefIndex(boss.level)+1,hitFlash:boss.hitFlash}:null};
 };
 window.__astra3dReady=false;
 
