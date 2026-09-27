@@ -6081,6 +6081,7 @@ let isPaused=false;
 let shootTick=0;
 
 let hasDouble=false;
+let jamTime=0;
 let hasDamage=false;
 let hasSpeed=false;
 
@@ -8481,7 +8482,7 @@ const ENEMY_TYPES=[
  {id:"swarmer",name:"SWARMER",tier:0,hp:35,r:15,speed:3.2,color:"#c58bff",accent:"#a855f7",move:"zigzag",fire:"single",rate:150},
  {id:"miner",name:"MINER",tier:0,hp:50,r:21,speed:1.4,color:"#ffb648",accent:"#ff8a1c",move:"straight",fire:"three",rate:120},
  {id:"turret",name:"TURRET",tier:0,hp:60,r:20,speed:2.0,color:"#ff7a7a",accent:"#ff2740",move:"anchor",fire:"rapid",rate:44},
- {id:"orbiter",name:"ORBITER",tier:0,hp:70,r:20,speed:1.8,color:"#4fd8ff",accent:"#22dcff",move:"drift",fire:"radial",rate:130},
+ {id:"orbiter",name:"ORBITER",tier:0,hp:70,r:20,speed:1.8,color:"#4fd8ff",accent:"#22dcff",move:"orbit",fire:"radial",rate:130},
  /* ELITE */
  {id:"raider",name:"RAIDER",tier:1,hp:120,r:21,speed:2.8,color:"#ff4d5e",accent:"#ff2740",move:"homing",fire:"spread",rate:95},
  {id:"sentinel",name:"SENTINEL",tier:1,hp:150,r:22,speed:2.0,color:"#8fd4ff",accent:"#2ff3ff",move:"straight",fire:"burst",rate:110},
@@ -8494,7 +8495,7 @@ const ENEMY_TYPES=[
  {id:"laser",name:"LASER",tier:2,hp:180,r:23,speed:1.3,color:"#ff3b5c",accent:"#ff2740",move:"anchor",fire:"laser",rate:150},
  {id:"sniper",name:"SNIPER",tier:2,hp:160,r:20,speed:1.2,color:"#ff7de3",accent:"#ff42d0",move:"drift",fire:"sniper",rate:170},
  {id:"healer",name:"HEALER",tier:2,hp:200,r:21,speed:1.6,color:"#4ef08a",accent:"#22e56a",move:"drift",fire:"heal",rate:120},
- {id:"jammer",name:"JAMMER",tier:2,hp:220,r:22,speed:1.7,color:"#c06bff",accent:"#a855f7",move:"drift",fire:"radial",rate:110},
+ {id:"jammer",name:"JAMMER",tier:2,hp:220,r:22,speed:1.7,color:"#c06bff",accent:"#a855f7",move:"drift",fire:"jam",rate:110},
  {id:"teleporter",name:"TELEPORTER",tier:2,hp:250,r:23,speed:1.5,color:"#8b5cff",accent:"#6d28d9",move:"blink",fire:"spread",rate:110}
 ];
 
@@ -8597,13 +8598,20 @@ function enemyFire(e){
    let b={x:e.x,y:e.y+e.r*0.5+i*14,vx:0,vy:7,color:e.accent,r:5,turn:0,dmg:9};
    if(bossBullets.length<90) bossBullets.push(b);
   }
+ }else if(f==="jam"){
+  /* jammer: shuts down the player's active power-ups for a few seconds */
+  for(let i=0;i<6;i++) enemyShot(e,e.phase+i*Math.PI/3,3.4,5,e.accent,10);
+  if(Math.hypot(px-e.x,py-e.y)<320 && !(jamTime>0)){
+   jamTime=240; hasDouble=false; hasDamage=false; hasSpeed=false;
+   addFloatText(px,py-40,"JAMMED!","#c06bff",18);
+  }
  }else if(f==="sniper"){
   enemyShot(e,aim,7,6,e.accent,20);
  }else if(f==="heal"){
   /* heals nearby enemies instead of shooting */
   enemies.forEach(function(o){
    if(o!==e && o.hp<o.maxHp && Math.hypot(o.x-e.x,o.y-e.y)<150){
-    o.hp=Math.min(o.maxHp,o.hp+1);
+    o.hp=Math.min(o.maxHp,o.hp+Math.max(2,o.maxHp*0.08));
     addFloatText(o.x,o.y-14,"+","#22e56a",14);
    }
   });
@@ -9583,6 +9591,7 @@ shieldTime--;
 
 
 shootTick++;
+if(jamTime>0) jamTime--;
 
 let rate=
 slowTime>0
@@ -9712,6 +9721,7 @@ Math.hypot(
 player.w/2+10
 ){
 
+if(jamTime>0){ powerUps.splice(i,1); addFloatText(p.x,p.y,"JAMMED","#c06bff",14); continue; }
 if(p.type==="fire"){
 
 hasDouble=true;
@@ -9792,11 +9802,13 @@ if(e.hitFlash>0) e.hitFlash--;
  if(e.age<e.holdFor){
   /* smooth easing into the lane instead of a hard stop */
   if(e.y<targetY-0.5) e.y+=Math.max(0.35,Math.min(e.v,(targetY-e.y)*0.045));
-  else e.y=targetY+Math.sin(e.phase*0.9)*6;
+  else e.y=targetY+(move==="orbit"?Math.sin(e.phase*1.6)*22:(move==="anchor"?0:Math.sin(e.phase*0.9)*6));
   let lanePull=(e.formationX-e.x)*0.03;
   let sway=move==="zigzag"?Math.sin(e.phase*1.8)*1.5:
            move==="drift"?Math.sin(e.phase*1.1)*1.05:
            move==="homing"?Math.max(-0.7,Math.min(0.7,((player.x+player.w/2)-e.x)*0.007)):
+           move==="orbit"?Math.cos(e.phase*1.6)*2.2:
+           move==="anchor"?0:
            Math.sin(e.phase*0.8)*0.6;
   e.x+=lanePull+sway;
   if(move==="blink"){
