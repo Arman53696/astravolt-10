@@ -5875,7 +5875,7 @@ if(true){
 /* last wave cleared on a boss level - the boss arrives */
 showToughBanner();
 doVibrate([25,20,25]);
-try{ loadBossSprite(BOSS_DEFS[((level-1)%BOSS_DEFS.length+BOSS_DEFS.length)%BOSS_DEFS.length].img); }catch(e){}
+try{ loadBossSprite(BOSS_DEFS[bossDefIndex(level)].img); }catch(e){}
 bossSpawnTimer=90;
 refillPlayerHp();
 }else{
@@ -6004,6 +6004,19 @@ function loadBossSprite(img){
  return im;
 }
 
+/* ---- BOSS CONFIG (edit here) ----
+   boss levels 5,10..50 get the full boss; the levels in between fight a
+   weaker version of the most recent boss */
+const BOSS_HP_TABLE={0:1500,5:5000,10:8000,15:12000,20:18000,25:25000,30:35000,35:48000,40:62000,45:80000,50:100000};
+const BOSS_WEAK_MULT=0.75, BOSS_SECOND_MULT=1.35;
+function bossDefIndex(lvl){ return Math.max(0,Math.min(BOSS_DEFS.length-1,Math.floor(lvl/5)-1)); }
+function bossHpFor(lvl){
+ let L=Math.min(50,lvl), lo=Math.floor(L/5)*5, hi=Math.min(50,lo+5);
+ let a=BOSS_HP_TABLE[lo], b=BOSS_HP_TABLE[hi], hp=hi===lo?a:a+(b-a)*(L-lo)/5;
+ if(lvl>50) hp*=1+(lvl-50)*0.05;
+ if(lvl%5!==0) hp*=BOSS_WEAK_MULT;
+ return Math.round(hp);
+}
 function spawnBoss(lvl){
 
 /* boss toughness ramps hard with the level: later worlds are
@@ -6015,11 +6028,11 @@ let barCount=bossBarCount(lvl);
 let bIdx=Math.floor((lvl-1)/5);
 /* every level has a boss now - hp grows steeply with the level,
    the second boss on a x10 level is even tougher */
-let hp=Math.round((900+700*Math.pow(lvl,1.18))*(bossRound>=1?1.35:1));
+let hp=Math.round(bossHpFor(lvl)*(bossRound>=1?BOSS_SECOND_MULT:1));
 let barHp=Math.round(hp/barCount);
 hp=barHp*barCount;
 let r=46+cap*2.6;
-let def=BOSS_DEFS[((lvl-1)%BOSS_DEFS.length+BOSS_DEFS.length)%BOSS_DEFS.length];
+let def=BOSS_DEFS[bossDefIndex(lvl)];
 
 boss={
 
@@ -10046,7 +10059,14 @@ if(boss){
 
 boss.phase+=0.025;
 boss.attackClock++;
-boss.phaseIndex=boss.hp<boss.maxHp*.38?3:(boss.hp<boss.maxHp*.7?2:1);
+let _pp=boss.phaseIndex;
+boss.phaseIndex=boss.hp<boss.maxHp*.4?3:(boss.hp<boss.maxHp*.7?2:1);
+if(boss.phaseIndex!==_pp){ addFloatText(W/2,H*0.3,boss.phaseIndex===3?"FINAL PHASE!":"PHASE "+boss.phaseIndex,"#ff4d69",24); doVibrate([30,20,30]); }
+/* phase 3: the boss calls in minions */
+if(boss.phaseIndex===3 && boss.y>=boss.targetY && boss.attackClock%300===0 && enemies.length<4){
+ let md=ENEMY_TYPES.filter(function(t){return t.id===(level>=11?"raider":"drone");})[0];
+ for(let s=-1;s<=1;s+=2){ let m=makeEnemy(md,Math.max(30,Math.min(W-30,boss.x+s*boss.r*1.4)),boss.y,1); enemies.push(m); }
+}
 
 if(boss.y<boss.targetY){
 
@@ -10151,7 +10171,7 @@ bossRound++;
 boss=null; bossBullets=[];
 refillPlayerHp();
 showToughBanner();
-try{ loadBossSprite(BOSS_DEFS[(clearedLevel%BOSS_DEFS.length)].img); }catch(e){}
+try{ loadBossSprite(BOSS_DEFS[bossDefIndex(clearedLevel)].img); }catch(e){}
 bossSpawnTimer=110;
 }else{
 
@@ -10892,7 +10912,7 @@ initCloudSave();
 
 
 window.__astra3dState=function(){
-  return {playing:isPlaying,paused:isPaused,w:W,h:H,player:{x:player.x,y:player.y,w:player.w,h:player.h},tilt:playerTilt,skin:equippedSkin,boss:boss?{x:boss.x,y:boss.y,level:boss.level,hitFlash:boss.hitFlash}:null};
+  return {playing:isPlaying,paused:isPaused,w:W,h:H,player:{x:player.x,y:player.y,w:player.w,h:player.h},tilt:playerTilt,skin:equippedSkin,boss:boss?{x:boss.x,y:boss.y,level:bossDefIndex(boss.level)+1,hitFlash:boss.hitFlash}:null};
 };
 window.__astra3dReady=false;
 
