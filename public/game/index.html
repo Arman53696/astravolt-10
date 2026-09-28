@@ -6112,13 +6112,23 @@ let im=new Image();
 im.src="icons/"+t+".png";
 POWERUP_ICONS[t]=im;
 });
+/* extra pickups use the battle-skill hexagon icons */
+Object.entries({damage:"dmgboost",triple:"triple",bomb:"bomb",pierce:"pierceshot",homing:"homingshot",boom:"explosiveshot"}).forEach(([t,f])=>{ let im=new Image(); im.src="icons/skills/"+f+".png"; POWERUP_ICONS[t]=im; });
+let PU_T={triple:0,pierce:0,homing:0,boom:0};
+/* coins per kill, by enemy type */
+const ENEMY_COINS={scout:2,drone:3,swarmer:3,miner:4,turret:5,orbiter:5,raider:8,sentinel:8,phantom:10,cruiser:12,shielder:14,splitter:14,bomber:15,laser:18,sniper:18,healer:20,jammer:22,teleporter:25};
+function randomPowerType(){
+ let r=Math.random();
+ return r<0.14?"fire":r<0.26?"damage":r<0.36?"triple":r<0.48?"shield":r<0.62?"health":r<0.70?"bomb":r<0.79?"pierce":r<0.88?"homing":r<0.96?"boom":"speed";
+}
 
 const POWERUP_COLORS={
 shield:"#22d3ee",
 health:"#ff2e55",
 speed:"#38bdf8",
 fire:"#ffb01c",
-coin:"#fbbf24"
+coin:"#fbbf24",
+damage:"#ef4444",triple:"#38bdf8",bomb:"#f97316",pierce:"#f59e0b",homing:"#a855f7",boom:"#fb923c"
 };
 
 /* ---- player health + skill tuning ---- */
@@ -7811,7 +7821,7 @@ hasDamage=false;
 hasSpeed=false;
 
 doubleTime=0;
-damageTime=0;
+damageTime=0; PU_T={triple:0,pierce:0,homing:0,boom:0};
 speedTime=0;
 
 slowTime=0;
@@ -8697,20 +8707,7 @@ if(enemies.length<activeEnemyCap && enemySpawnCooldown<=0 && (forceSpawn || Math
 if(Math.random()<0.0006){
 
 /* only five pickups exist now, and they arrive sparingly */
-let roll=Math.random();
-let dropType;
-
-if(roll<0.30){
-dropType="coin";
-}else if(roll<0.55){
-dropType="fire";
-}else if(roll<0.75){
-dropType="speed";
-}else if(roll<0.90){
-dropType="health";
-}else{
-dropType="shield";
-}
+let dropType=Math.random()<0.3?"coin":randomPowerType();
 
 powerUps.push({
 
@@ -9605,6 +9602,8 @@ shieldTime--;
 
 shootTick++;
 if(jamTime>0) jamTime--;
+for(const k in PU_T) if(PU_T[k]>0) PU_T[k]--;
+if(jamTime>0){ for(const k in PU_T) PU_T[k]=0; }
 
 let rate=
 slowTime>0
@@ -9668,7 +9667,8 @@ for(let k=1;k<=BS.proj;k++){
  let side=(k%2?1:-1)*Math.ceil(k/2);
  bullets.push({x:player.x+player.w/2-bw/2+side*10,y:player.y+8,w:bw,h:bh,c:col,pierce:(upgrades.piercing||0)+BS.pierce,vx:side*spreadV});
 }
-for(let k=n0;k<bullets.length;k++){ let nb=bullets[k]; if(BS.homing) nb.homing=BS.homing; if(BS.boom) nb.boom=BS.boom; if(BS.chain) nb.chain=BS.chain; }
+if(PU_T.triple>0) for(let s2=-1;s2<=1;s2+=2) bullets.push({x:player.x+player.w/2-bw/2+s2*14,y:player.y+6,w:bw,h:bh,c:col,pierce:(upgrades.piercing||0)+BS.pierce,vx:s2*1.4});
+for(let k=n0;k<bullets.length;k++){ let nb=bullets[k]; let hm=BS.homing+(PU_T.homing>0?1:0), bm=BS.boom+(PU_T.boom>0?1:0); if(hm) nb.homing=hm; if(bm) nb.boom=bm; if(BS.chain) nb.chain=BS.chain; if(PU_T.pierce>0) nb.pierce+=2; }
 
 }
 
@@ -9743,6 +9743,17 @@ addFloatText(p.x,p.y-10,"FIRE RATE "+fireMultiplier().toFixed(1)+"x","#ffb01c",1
 
 }
 
+if(p.type==="damage"){ hasDamage=true; damageTime=Math.min(damageTime+POWERUP_DURATION,POWERUP_MAX); addFloatText(p.x,p.y-10,"DAMAGE BOOST","#ef4444",16); }
+if(p.type==="triple"||p.type==="pierce"||p.type==="homing"||p.type==="boom"){
+ PU_T[p.type]=Math.min(PU_T[p.type]+POWERUP_DURATION,POWERUP_MAX);
+ addFloatText(p.x,p.y-10,{triple:"TRIPLE SHOT",pierce:"PIERCING SHOT",homing:"HOMING SHOT",boom:"EXPLOSIVE SHOT"}[p.type],POWERUP_COLORS[p.type],16);
+}
+if(p.type==="bomb"){
+ bossBullets=[]; if(shakeOn) shakeTime=18;
+ enemies.forEach(o=>{ if(o.y-o.r>2){ createExplosion(o.x,o.y,"#f97316"); bullets.push({x:o.x-1,y:o.y-1,w:2,h:2,ghost:true,life:2,pierce:0,dmg:(o.maxHp||o.hp)*0.6+20}); } });
+ if(boss) boss.hp-=boss.maxHp*0.03;
+ addFloatText(W/2,H*0.4,"BOMB!","#f97316",26);
+}
 if(p.type==="speed"){
 
 hasSpeed=true;
@@ -9961,6 +9972,9 @@ let mult=1+Math.floor(combo/5)*0.5;
 let gained=Math.round((e.score||10)*mult*shipPerk().score);
 
 score+=gained;
+let kc=(e.def&&ENEMY_COINS[e.def.id])||0;
+if(kc){ coins+=kc; runCoins+=kc; syncCoinDisplays(); }
+if(e.def && powerUps.length<4 && Math.random()<(e.def.tier>=1?0.22:0.03)) powerUps.push({x:e.x,y:e.y,type:randomPowerType(),v:2});
 
 addFloatText(e.x,e.y-8,"+"+gained,combo>=10?"#f472b6":(combo>=5?"#fbbf24":"#e2e8f0"),combo>=5?19:16);
 
@@ -10139,6 +10153,7 @@ boss.hitFlash=6;
 createExplosion(b.x,b.y,"#ef4444");
 
 if(boss.hp<=0){
+{ let bc=100+boss.level*20*(boss.level%5===0?2:1); coins+=bc; runCoins+=bc; addFloatText(boss.x,boss.y-40,"+"+bc+" CR","#fbbf24",22); try{syncCoinDisplays(); saveData();}catch(e){} }
 
 createExplosion(boss.x,boss.y,"#fbbf24");
 createExplosion(boss.x,boss.y,"#ef4444");
